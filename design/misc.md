@@ -1,0 +1,1 @@
+* Enable assertions with the `-ea` java flag. Aura handler stuff has a lot of assertions
