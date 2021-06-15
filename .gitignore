@@ -31,3 +31,6 @@ bin/
 # fabric
 
 run/
+
+# Krita poops these sorts of files all over the place
+*.png~

@@ -6,7 +6,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
-archivesBaseName = project.archives_base_name
+archivesBaseName = "${project.archives_base_name}-${project.minecraft_version}"
 version = project.mod_version
 group = project.maven_group
 
@@ -29,6 +29,31 @@ dependencies {
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDirs += "src/gen_out/resources"
+		}
+	}
+	
+	gen {
+		compileClasspath += sourceSets.main.output
+  	compileClasspath += sourceSets.main.compileClasspath
+  	runtimeClasspath += sourceSets.main.output
+  	runtimeClasspath += sourceSets.main.runtimeClasspath
+	}
+	
+	gen_out {
+	
+	}
+}
+
+task runGenerator(type: net.fabricmc.loom.task.RunClientTask, dependsOn: downloadAssets, group: "halogen") {
+	classpath = configurations.runtimeClasspath
+	classpath sourceSets.main.output
+	classpath sourceSets.gen.output
 }
 
 processResources {
@@ -61,6 +86,14 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
+	
+	//Datagen things
+	exclude ".cache"
+	
+	//ae2-fabric has this. idk if it's needed
+	finalizedBy "remapJar"
+	from sourceSets.main.output.classesDirs
+	from sourceSets.main.output.resourcesDir
 }
 
 // configure the maven publication

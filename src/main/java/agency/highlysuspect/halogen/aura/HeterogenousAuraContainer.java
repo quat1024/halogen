@@ -1,8 +1,7 @@
 package agency.highlysuspect.halogen.aura;
 
-import agency.highlysuspect.halogen.util.CodecUtil;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.HashMap;
@@ -16,22 +15,21 @@ public class HeterogenousAuraContainer implements AuraContainer {
 	protected final HashMap<AuraType, AuraStack> contents;
 	public final int maxSize;
 	
-	public static final Codec<HeterogenousAuraContainer> CODEC = RecordCodecBuilder.create(i -> i.group(
-		CodecUtil.derivedMutableMapOf(AuraStack.CODEC, AuraStack::type).fieldOf("contents").forGetter(c -> c.contents),
-		Codec.INT.fieldOf("maxSize").forGetter(c -> c.maxSize)
-	).apply(i, HeterogenousAuraContainer::new));
-	
 	//deserialization constructor
 	private HeterogenousAuraContainer(HashMap<AuraType, AuraStack> contents, int maxSize) {
 		this.contents = contents;
 		this.maxSize = maxSize;
 	}
 	
+	protected AuraStack getOrCreate(AuraType type) {
+		return contents.computeIfAbsent(type, AuraType::makeEmptyStack);
+	}
+	
 	@Override
 	public AuraStack accept(AuraStack toAdd, Simulation sim) {
 		int totalVolume = computeTotalVolume();
 		
-		//Case 1: It's full. Reject all of the aura.
+		//It's full. Reject all of the aura.
 		if(totalVolume == maxSize) {
 			return toAdd;
 		}
@@ -45,7 +43,7 @@ public class HeterogenousAuraContainer implements AuraContainer {
 		int leftover = toAdd.amount() - amountToAdd;
 		
 		if(sim.forReal()) {
-			contents.put(toAdd.type(), contents.computeIfAbsent(toAdd.type(), AuraStack::empty).grow(amountToAdd));
+			getOrCreate(toAdd.type()).mutGrow(amountToAdd);
 			
 			assert totalVolume + amountToAdd == computeTotalVolume();
 			assert hasntOverflowed();
@@ -57,19 +55,19 @@ public class HeterogenousAuraContainer implements AuraContainer {
 	
 	@Override
 	public AuraStack withdraw(AuraStack toWithdraw, Simulation sim) {
-		AuraStack stackOfThisType = contents.computeIfAbsent(toWithdraw.type(), AuraStack::empty);
+		AuraStack myStack = getOrCreate(toWithdraw.type());
 		
-		int amountToWithdraw = MathHelper.clamp(stackOfThisType.amount() - toWithdraw.amount(), 0, stackOfThisType.amount());
+		int amountToWithdraw = MathHelper.clamp(toWithdraw.amount(), 0, myStack.amount());
 		
 		if(sim.forReal()) {
-			int totalVolume_ = -1;
+			int oldTotalVolume = -1;
 			//annoyingly you can't "only run a block of code when assertions are enabled", so i stick it as a side effect
 			//noinspection AssertWithSideEffects
-			assert (totalVolume_ = computeTotalVolume()) != -1;
+			assert (oldTotalVolume = computeTotalVolume()) != -1;
 			
-			contents.put(stackOfThisType.type(), stackOfThisType.shrink(amountToWithdraw));
+			myStack.mutShrink(amountToWithdraw);
 			
-			assert computeTotalVolume() - totalVolume_ == amountToWithdraw;
+			assert oldTotalVolume - computeTotalVolume() == amountToWithdraw;
 		}
 		
 		//Return the amount that was just withdrawn.
@@ -79,6 +77,45 @@ public class HeterogenousAuraContainer implements AuraContainer {
 	@Override
 	public Iterable<AuraStack> contents() {
 		return contents.values();
+	}
+	
+	@Override
+	public boolean hasAny(AuraType type) {
+		return !getOrCreate(type).isEmpty();
+	}
+	
+	public NbtCompound toTag() {
+		NbtCompound nbt = toSizelessTag();
+		nbt.putInt("maxSize", maxSize);
+		return nbt;
+	}
+	
+	public NbtCompound toSizelessTag() {
+		NbtCompound contentTag = new NbtCompound();
+		contents.forEach((type, stack) -> {
+			if(!stack.isEmpty()) contentTag.put(AuraType.REGISTRY.getId(type).toString(), stack.toTypelessTag());
+		});
+		
+		NbtCompound nbt = new NbtCompound();
+		nbt.put("contents", contentTag);
+		return nbt;
+	}
+	
+	public static HeterogenousAuraContainer fromTag(NbtCompound nbt) {
+		return fromSizelessTag(nbt.getInt("maxSize"), nbt);
+	}
+	
+	public static HeterogenousAuraContainer fromSizelessTag(int maxSize, NbtCompound nbt) {
+		HashMap<AuraType, AuraStack> contents = new HashMap<>();
+		
+		NbtCompound contentTag = nbt.getCompound("contents");
+		for(String type : contentTag.getKeys()) {
+			AuraType aType = AuraType.REGISTRY.get(Identifier.tryParse(type));
+			if(aType == null) continue;
+			contents.put(aType, AuraStack.fromTypelessTag(aType, contentTag.getCompound(type)));
+		}
+		
+		return new HeterogenousAuraContainer(contents, maxSize);
 	}
 	
 	private int computeTotalVolume() {
@@ -92,5 +129,13 @@ public class HeterogenousAuraContainer implements AuraContainer {
 	
 	private boolean hasntOverflowed() {
 		return computeTotalVolume() <= maxSize;
+	}
+	
+	@Override
+	public String toString() {
+		return "HeterogenousAuraContainer{" +
+			"contents=" + contents +
+			", maxSize=" + maxSize +
+			'}';
 	}
 }

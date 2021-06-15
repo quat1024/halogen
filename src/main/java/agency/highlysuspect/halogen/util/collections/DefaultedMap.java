@@ -1,6 +1,5 @@
 package agency.highlysuspect.halogen.util.collections;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

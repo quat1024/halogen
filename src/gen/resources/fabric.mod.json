@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "halogen-datagen",
+  "version": "${version}",
+
+  "name": "Halogen Datagen",
+  "description": "When yu,o",
+  "authors": [
+    "quaternary"
+  ],
+  "contact": {
+    "homepage": "https://highlysuspect.agency/"
+  },
+
+  "license": "LGPL-3.0-or-later",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "agency.highlysuspect.halogen.gen.GenInit"
+    ]
+  },
+
+  "depends": {
+    "halogen": "*"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}

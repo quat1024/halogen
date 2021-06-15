@@ -16,7 +16,11 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -29,7 +33,7 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		super(settings);
 	}
 	
-	private static final VoxelShape NODE_SHAPE = VoxelShapes.cuboid(2/16d, 2/16d, 2/16d, 14/16d, 14/16d, 14/16d);
+	private static final VoxelShape NODE_SHAPE = VoxelShapes.cuboid(4/16d, 4/16d, 4/16d, 12/16d, 12/16d, 12/16d);
 	
 	@Override
 	public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
@@ -49,6 +53,25 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		
 		stack.decrement(1);
 		itemEntity.setStack(itemEntity.getStack()); //force a sync
+	}
+	
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+		if(!(world.getBlockEntity(pos) instanceof NodeBlockEntity node)) return ActionResult.PASS;
+		AuraContainer nodeContainer = node.getAuraContainer();
+		
+		ItemStack held = player.getStackInHand(hand);
+		if(!(held.getItem() instanceof HasAuraContainer containerHaver)) return ActionResult.PASS;
+		
+		if(!world.isClient) {
+			for(AuraStack aStack : containerHaver.getAuraContainer().contents()) {
+				AuraStack leftover = nodeContainer.accept(aStack, Simulation.FOR_REAL);
+				//Throw away the leftover
+			}
+		}
+		
+		held.decrement(1);
+		return ActionResult.SUCCESS;
 	}
 	
 	@Nullable

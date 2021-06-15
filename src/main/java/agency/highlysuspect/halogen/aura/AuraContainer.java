@@ -1,7 +1,5 @@
 package agency.highlysuspect.halogen.aura;
 
-import com.mojang.serialization.Codec;
-
 //Loosely iitemhandler-ish interface. It's not great, but gets the job done.
 //I can never remember whether the return param for iitemhandler is "amount left over" or "amount inserted".
 //(I think that ifluidhandler is the other way round, confusingly.)
@@ -32,5 +30,21 @@ public interface AuraContainer {
 	
 	default boolean hasAny(AuraType type) {
 		return !withdraw(new AuraStack(type, 1), Simulation.JUST_CHECKING).isEmpty();
+	}
+	
+	default boolean isEmpty() {
+		for(AuraStack stack : contents()) {
+			if(!stack.isEmpty()) return false;
+		}
+		return true;
+	}
+	
+	default void pourInto(AuraContainer other) {
+		for(AuraStack stack : contents()) {
+			AuraStack withdrawn = withdraw(stack, Simulation.FOR_REAL);
+			AuraStack leftover = other.accept(withdrawn, Simulation.FOR_REAL);
+			AuraStack leftoverLeftover = accept(leftover, Simulation.FOR_REAL);
+			assert leftoverLeftover.isEmpty(); //todo jank
+		}
 	}
 }

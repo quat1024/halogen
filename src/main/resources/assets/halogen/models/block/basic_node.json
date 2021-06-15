@@ -1,0 +1,7 @@
+{
+	"credit": "Made with Blockbench by quaternary",
+	"parent": "halogen:block/node_base",
+	"textures": {
+		"node": "halogen:node/basic"
+	}
+}
