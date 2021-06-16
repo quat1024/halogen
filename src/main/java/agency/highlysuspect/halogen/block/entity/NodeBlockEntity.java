@@ -1,11 +1,9 @@
 package agency.highlysuspect.halogen.block.entity;
 
-import agency.highlysuspect.halogen.aura.AuraContainer;
-import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.HeterogenousAuraContainer;
-import agency.highlysuspect.halogen.aura.Simulation;
+import agency.highlysuspect.halogen.aura.*;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.NbtHelper2;
+import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -28,8 +26,10 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	private static final int MAX_BINDING_DISTANCE = 10;
 	private static final int MAX_AURA_SEND = 2; //Todo increase this a lot
 	
-	private HeterogenousAuraContainer incomingContainer = new HeterogenousAuraContainer(INCOMING_SIZE);
-	private HeterogenousAuraContainer mainContainer = new HeterogenousAuraContainer(MAIN_SIZE);
+	private final NodeAuraContainer container = new NodeAuraContainer(
+		new UnboundedAuraContainer(AuraStack.empty()),
+		new UnboundedAuraContainer(AuraStack.empty())
+	);
 	private List<BlockPos> bindings = new ArrayList<>();
 	
 	public void tickServer(World world, BlockPos pos, BlockState state) {
@@ -51,18 +51,18 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 				//TODO max_aura_send should proportionally adjust the amount of aura of each type
 				// Rn if there's two aura types, it just sends them both, twice as fast
 				// Also the number of bindings should affect it too.
-				for(AuraStack stack : mainContainer.contents()) {
-					AuraStack toSend = mainContainer.withdraw(stack.withAmount(MAX_AURA_SEND), Simulation.JUST_CHECKING);
-					AuraStack doesItFit = otherNode.incomingContainer.accept(toSend, Simulation.JUST_CHECKING);
-					if(doesItFit.isEmpty()) {
-						toSend = mainContainer.withdraw(stack.withAmount(MAX_AURA_SEND), Simulation.FOR_REAL);
-						doesItFit = otherNode.incomingContainer.accept(toSend, Simulation.FOR_REAL);
-						assert doesItFit.isEmpty();
+				AuraContainer other = otherNode.getAuraContainer();
+				try(Transaction tx = new Transaction()) {
+					//TODO: I need a forEach
+					AuraStack toSend = container.withdraw(new AuraStack(AuraType.WHITE, MAX_AURA_SEND), tx);
+					AuraStack leftoverAfterSend = other.accept(toSend, tx);
+					if(leftoverAfterSend.isEmpty()) {
+						tx.commit();
 					}
 				}
 			}
 		} else if(mod == 1) {
-			incomingContainer.pourInto(mainContainer);
+			container.pourIncomingIntoMain();
 		}
 	}
 	
@@ -98,13 +98,12 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	
 	@Override
 	public AuraContainer getAuraContainer() {
-		return mainContainer;
+		return container;
 	}
 	
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt) {
-		nbt.put("incoming", incomingContainer.toSizelessTag());
-		nbt.put("main", mainContainer.toSizelessTag());
+		nbt.put("aura", container.writeNbt());
 		nbt.put("bindings", NbtHelper2.fromBlockPosList(bindings));
 		return super.writeNbt(nbt);
 	}
@@ -112,8 +111,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	@Override
 	public void readNbt(NbtCompound nbt) {
 		super.readNbt(nbt);
-		incomingContainer = HeterogenousAuraContainer.fromSizelessTag(INCOMING_SIZE, nbt.getCompound("incoming"));
-		mainContainer = HeterogenousAuraContainer.fromSizelessTag(MAIN_SIZE, nbt.getCompound("main"));
+		container.readNbt(nbt.getCompound("aura"));
 		bindings = NbtHelper2.toBlockPosArrayList(nbt.getList("bindings", 10));
 	}
 }

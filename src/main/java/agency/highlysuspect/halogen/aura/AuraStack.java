@@ -15,6 +15,10 @@ public final class AuraStack {
 		this.amount = amount;
 	}
 	
+	public static AuraStack empty() {
+		return new AuraStack(AuraType.WHITE, 0);
+	}
+	
 	public AuraStack copy() {
 		return new AuraStack(type, amount);
 	}

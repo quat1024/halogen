@@ -2,11 +2,12 @@ package agency.highlysuspect.halogen.block;
 
 import agency.highlysuspect.halogen.aura.AuraContainer;
 import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.Simulation;
+import agency.highlysuspect.halogen.aura.AuraType;
 import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.block.entity.NodeBlockEntity;
 import agency.highlysuspect.halogen.block.entity.TickerUtil;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
+import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -45,14 +46,18 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		ItemStack stack = itemEntity.getStack();
 		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return;
 		
-		for(AuraStack astack : containerHaver.getAuraContainer().contents()) {
-			AuraStack leftover = nodeContainer.accept(astack, Simulation.FOR_REAL);
-			//Throw away the leftover for now (yeah this sucks)
-			//Need a better idiom for extracting from items
+		//TODO: I need a forEach
+		try(Transaction tx = new Transaction()) {
+			AuraStack fromItem = containerHaver.getAuraContainer().withdraw(new AuraStack(AuraType.WHITE, Integer.MAX_VALUE), tx);
+			AuraStack leftoverAfterInsertion = nodeContainer.accept(fromItem, tx);
+			if(leftoverAfterInsertion.isEmpty()) {
+				tx.commit();
+				
+				//Need a better idiom for extracting from items.
+				stack.decrement(1);
+				itemEntity.setStack(itemEntity.getStack()); //force a sync
+			}
 		}
-		
-		stack.decrement(1);
-		itemEntity.setStack(itemEntity.getStack()); //force a sync
 	}
 	
 	@Override
@@ -60,18 +65,25 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		if(!(world.getBlockEntity(pos) instanceof NodeBlockEntity node)) return ActionResult.PASS;
 		AuraContainer nodeContainer = node.getAuraContainer();
 		
-		ItemStack held = player.getStackInHand(hand);
-		if(!(held.getItem() instanceof HasAuraContainer containerHaver)) return ActionResult.PASS;
+		ItemStack stack = player.getStackInHand(hand);
+		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return ActionResult.PASS;
 		
 		if(!world.isClient) {
-			for(AuraStack aStack : containerHaver.getAuraContainer().contents()) {
-				AuraStack leftover = nodeContainer.accept(aStack, Simulation.FOR_REAL);
-				//Throw away the leftover
+			try(Transaction tx = new Transaction()) {
+				//TODO, need a forEach
+				AuraStack fromItem = containerHaver.getAuraContainer().withdraw(new AuraStack(AuraType.WHITE, Integer.MAX_VALUE), tx);
+				AuraStack leftoverAfterInsertion = nodeContainer.accept(fromItem, tx);
+				if(leftoverAfterInsertion.isEmpty()) {
+					tx.commit();
+					
+					//Need a better idiom for extracting from items.
+					stack.decrement(1);
+					return ActionResult.SUCCESS;
+				}
 			}
 		}
 		
-		held.decrement(1);
-		return ActionResult.SUCCESS;
+		return ActionResult.PASS;
 	}
 	
 	@Nullable

@@ -98,3 +98,7 @@ for (int i = 0; i <= stackPointer; ++i){
 	STACK.get(i).stateStorage.computeIfAbsent(participant, Participant::onEnlist);
 }
 ```
+
+Couple other notes on fasttransferlib:
+
+* `Storage`s are granular: `InventoryStorageView` produces a new `View` for each *slot* in an inventory. Seems weird, but it means `Transaction`s only need to worry about a single item slot 
