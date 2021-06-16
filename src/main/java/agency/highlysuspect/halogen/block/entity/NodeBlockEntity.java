@@ -50,7 +50,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 				// Also the number of bindings should affect it too.
 				AuraContainer other = otherNode.getAuraContainer();
 				try(Transaction tx = new Transaction()) {
-					for(AuraStack stack : container.contents()) {
+					for(AuraStack stack : container.contentsCopy()) {
 						AuraStack toSend = container.withdraw(stack.withAmount(MAX_AURA_SEND), tx);
 						AuraStack leftoverAfterSend = other.accept(toSend, tx);
 						//Specifically put any leftovers back into the *main* chamber, not incoming

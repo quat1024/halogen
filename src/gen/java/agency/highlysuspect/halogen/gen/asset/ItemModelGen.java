@@ -32,6 +32,8 @@ public class ItemModelGen implements DataProvider {
 		
 		layer0(HaloItems.LINKING_WAND, this::write);
 		layer0(HaloItems.WHITE_AURA_CRYSTAL, this::write);
+		layer0(HaloItems.RED_AURA_CRYSTAL, this::write);
+		layer0(HaloItems.BLUE_AURA_CRYSTAL, this::write);
 	}
 	
 	private void itemWithBlockModelParent(Block b, DataCache cache) throws IOException {

@@ -14,6 +14,8 @@ public class AuraType {
 	public static final Registry<AuraType> REGISTRY = new SimpleRegistry<>(AURA_TYPE_KEY, Lifecycle.stable()); //"stable"
 	
 	public static final AuraType WHITE = reg(Init.id("white"), new AuraType());
+	public static final AuraType RED = reg(Init.id("red"), new AuraType());
+	public static final AuraType BLUE = reg(Init.id("blue"), new AuraType());
 	
 	public static AuraType reg(Identifier id, AuraType type) {
 		return Registry.register(REGISTRY, id, type);

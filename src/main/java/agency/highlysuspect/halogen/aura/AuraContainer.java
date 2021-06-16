@@ -3,6 +3,7 @@ package agency.highlysuspect.halogen.aura;
 import agency.highlysuspect.halogen.Init;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public interface AuraContainer {
@@ -28,13 +29,20 @@ public interface AuraContainer {
 	Collection<AuraStack> contents();
 	
 	/**
+	 * @return A view into the contents of this aura container, such that it is safe to modify the container and iterate this collection at the same time.
+	 */
+	default Collection<AuraStack> contentsCopy() {
+		return new ArrayList<>(contents());
+	}
+	
+	/**
 	 * Try to pour all of my aura into another aura container.
 	 * @return Whether all of my aura fit into the other container.
 	 */
 	default boolean pourInto(AuraContainer other, Transaction tx) {
 		boolean allFit = true;
 		
-		for(AuraStack stack : contents()) {
+		for(AuraStack stack : contentsCopy()) {
 			AuraStack withdrawnStack = withdraw(stack, tx);
 			AuraStack leftoverAfterInsertion = other.accept(withdrawnStack, tx);
 			if(!leftoverAfterInsertion.isEmpty()) {

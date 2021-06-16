@@ -16,6 +16,8 @@ public class HaloItems {
 	
 	public static final BlockItem BASIC_NODE = blockItem(HaloBlocks.BASIC_NODE);
 	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(AuraType.WHITE.makeStack(10), settings()));
+	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(AuraType.RED.makeStack(10), settings()));
+	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(AuraType.BLUE.makeStack(100), settings()));
 	public static final LinkingWandItem LINKING_WAND = reg("linking_wand", new LinkingWandItem(settings().maxCount(1)));
 	
 	private static BlockItem blockItem(Block b) {
