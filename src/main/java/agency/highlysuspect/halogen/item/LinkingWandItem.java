@@ -26,26 +26,26 @@ public class LinkingWandItem extends Item {
 	
 	private static final String BINDING_KEY = "halogen-binding";
 	
-	private BlockPos readBindingPos(ItemStack stack) {
+	private BlockPos getBindingSource(ItemStack stack) {
 		if(!stack.hasTag()) return null;
 		
 		NbtCompound nbt = stack.getTag(); assert nbt != null;
 		return NbtHelper.toBlockPos(nbt.getCompound(BINDING_KEY));
 	}
 	
-	private boolean hasBindingPos(ItemStack stack) {
+	private boolean hasBindingSource(ItemStack stack) {
 		if(!stack.hasTag()) return false;
 		
 		NbtCompound nbt = stack.getTag(); assert nbt != null;
 		return nbt.contains(BINDING_KEY);
 	}
 	
-	private void putBindingPos(ItemStack stack, BlockPos bindingPos) {
+	private void putBindingSource(ItemStack stack, BlockPos bindingPos) {
 		NbtCompound nbt = stack.getOrCreateTag();
 		nbt.put(BINDING_KEY, NbtHelper.fromBlockPos(bindingPos));
 	}
 	
-	private void clearBindingPos(ItemStack stack) {
+	private void clearBindingSource(ItemStack stack) {
 		if(!stack.hasTag()) return;
 		NbtCompound nbt = stack.getTag(); assert nbt != null;
 		nbt.remove(BINDING_KEY);
@@ -58,17 +58,15 @@ public class LinkingWandItem extends Item {
 		BlockPos pos = context.getBlockPos();
 		
 		if(world.getBlockEntity(pos) instanceof NodeBlockEntity) {
-			if(hasBindingPos(stack)) {
-				BlockPos bindingPos = readBindingPos(context.getStack());
-				assert bindingPos != null;
+			if(hasBindingSource(stack)) {
+				BlockPos bindingSource = getBindingSource(context.getStack()); assert bindingSource != null;
 				
-				if(world.getBlockEntity(bindingPos) instanceof NodeBlockEntity src && src.isValidBinding(pos)) {
-					if(!world.isClient()) src.addOrRemoveBinding(pos);
-					clearBindingPos(stack);
+				if(world.getBlockEntity(bindingSource) instanceof NodeBlockEntity src && src.onLinkingWand(pos)) {
+					clearBindingSource(stack);
 					return ActionResult.SUCCESS;
 				}
 			} else {
-				putBindingPos(stack, pos);
+				putBindingSource(stack, pos);
 				return ActionResult.SUCCESS;
 			}
 		}
@@ -80,8 +78,8 @@ public class LinkingWandItem extends Item {
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
 		ItemStack stack = user.getStackInHand(hand);
 		
-		if(user.isSneaking() && hasBindingPos(stack)) {
-			clearBindingPos(stack);
+		if(user.isSneaking() && hasBindingSource(stack)) {
+			clearBindingSource(stack);
 			return TypedActionResult.success(stack, true);
 		}
 		
@@ -90,6 +88,6 @@ public class LinkingWandItem extends Item {
 	
 	@Override
 	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		if(context.isAdvanced() && hasBindingPos(stack)) tooltip.add(new LiteralText("binding pos: " + readBindingPos(stack)));
+		if(context.isAdvanced() && hasBindingSource(stack)) tooltip.add(new LiteralText("binding pos: " + getBindingSource(stack)));
 	}
 }

@@ -79,21 +79,19 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		return world.getBlockEntity(other) instanceof NodeBlockEntity;
 	}
 	
-	public boolean hasBindingTo(BlockPos other) {
-		return bindings.contains(other);
-	}
-	
-	public void addBindingTo(BlockPos other) {
-		bindings.add(other);
-	}
-	
-	public void removeBindingTo(BlockPos other) {
-		bindings.remove(other);
-	}
-	
-	public void addOrRemoveBinding(BlockPos other) {
-		if(hasBindingTo(other)) removeBindingTo(other);
-		else addBindingTo(other);
+	public boolean onLinkingWand(BlockPos other) {
+		assert world != null;
+		
+		if(!isValidBinding(other)) return false;
+		
+		if(!world.isClient) {
+			if(bindings.contains(other)) bindings.remove(other);
+			else bindings.add(other);
+			
+			markDirty();
+		}
+		
+		return true;
 	}
 	
 	@Override
