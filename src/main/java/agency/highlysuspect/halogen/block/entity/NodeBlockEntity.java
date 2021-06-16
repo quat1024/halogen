@@ -10,9 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	public NodeBlockEntity(BlockPos pos, BlockState state) {
@@ -30,21 +28,20 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		new UnboundedAuraContainer(AuraStack.empty()),
 		new UnboundedAuraContainer(AuraStack.empty())
 	);
-	private List<BlockPos> bindings = new ArrayList<>();
+	private Set<BlockPos> bindings = new HashSet<>();
 	
 	public void tickServer(World world, BlockPos pos, BlockState state) {
 		long mod = world.getTime() % TICK_INTERVAL;
 		if(mod == 0) {
-			ListIterator<BlockPos> poserator = bindings.listIterator();
-			while(poserator.hasNext()) {
-				BlockPos binding = poserator.next();
+			HashSet<BlockPos> bindingsToRemove = null;
+			
+			for(BlockPos binding : bindings) {
 				if(!world.getChunkManager().isChunkLoaded(binding.getX() / 16, binding.getZ() / 16)) continue;
 				
 				if(!(world.getBlockEntity(binding) instanceof NodeBlockEntity otherNode)) {
-					//Remove the binding since whatever's here is not a node anymore.
-					//(doing it through the iterator instead of unbindFrom, since i'm iterating the list rn)
-					poserator.remove();
-					markDirty();
+					//Remove the binding, since whatever's here is not a node anymore.
+					if(bindingsToRemove == null) bindingsToRemove = new HashSet<>();
+					bindingsToRemove.add(binding);
 					continue;
 				}
 				
@@ -61,6 +58,8 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 					}
 				}
 			}
+			
+			if(bindingsToRemove != null) bindingsToRemove.forEach(this::unbindFrom);
 		} else if(mod == 1) {
 			container.pourIncomingIntoMain();
 		}
@@ -121,7 +120,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt) {
 		nbt.put("aura", container.writeNbt());
-		nbt.put("bindings", NbtHelper2.fromBlockPosList(bindings));
+		nbt.put("bindings", NbtHelper2.fromBlockPosSet(bindings));
 		return super.writeNbt(nbt);
 	}
 	
@@ -129,6 +128,6 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	public void readNbt(NbtCompound nbt) {
 		super.readNbt(nbt);
 		container.readNbt(nbt.getCompound("aura"));
-		bindings = NbtHelper2.toBlockPosArrayList(nbt.getList("bindings", 10));
+		bindings = NbtHelper2.toBlockPosHashSet(nbt.getList("bindings", 10));
 	}
 }
