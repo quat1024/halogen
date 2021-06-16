@@ -46,17 +46,15 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		ItemStack stack = itemEntity.getStack();
 		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return;
 		
-		//TODO: I need a forEach
 		try(Transaction tx = new Transaction()) {
-			AuraStack fromItem = containerHaver.getAuraContainer().withdraw(new AuraStack(AuraType.WHITE, Integer.MAX_VALUE), tx);
-			AuraStack leftoverAfterInsertion = nodeContainer.accept(fromItem, tx);
-			if(leftoverAfterInsertion.isEmpty()) {
+			boolean allFit = containerHaver.getAuraContainer().pourInto(nodeContainer, tx);
+			if(allFit) {
 				tx.commit();
 				
 				//Need a better idiom for extracting from items.
 				stack.decrement(1);
-				itemEntity.setStack(itemEntity.getStack()); //force a sync
-			}
+				itemEntity.setStack(itemEntity.getStack()); //force an item entity sync
+			} else tx.rollback();
 		}
 	}
 	
@@ -70,20 +68,17 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		
 		if(!world.isClient) {
 			try(Transaction tx = new Transaction()) {
-				//TODO, need a forEach
-				AuraStack fromItem = containerHaver.getAuraContainer().withdraw(new AuraStack(AuraType.WHITE, Integer.MAX_VALUE), tx);
-				AuraStack leftoverAfterInsertion = nodeContainer.accept(fromItem, tx);
-				if(leftoverAfterInsertion.isEmpty()) {
+				boolean allFit = containerHaver.getAuraContainer().pourInto(nodeContainer, tx);
+				
+				if(allFit) {
 					tx.commit();
-					
 					//Need a better idiom for extracting from items.
 					stack.decrement(1);
-					return ActionResult.SUCCESS;
-				}
+				} else tx.rollback();
 			}
 		}
 		
-		return ActionResult.PASS;
+		return ActionResult.SUCCESS;
 	}
 	
 	@Nullable

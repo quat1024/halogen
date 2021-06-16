@@ -4,14 +4,20 @@ import agency.highlysuspect.halogen.util.transaction.Participant;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.nbt.NbtCompound;
 
-//TOdo: Not very useful in practice, just a test of the transactionable aura container system
-public class UnboundedAuraContainer implements Participant<AuraStack>, AuraContainer, SerializableAuraContainer {
-	public UnboundedAuraContainer(AuraStack stack) {
+import java.util.Collection;
+import java.util.Collections;
+
+public class UnboundedHomogenousAuraContainer implements Participant<AuraStack>, SerializableAuraContainer {
+	public UnboundedHomogenousAuraContainer() {
+		this(AuraStack.empty());
+	}
+	
+	public UnboundedHomogenousAuraContainer(AuraStack stack) {
 		this.stack = stack;
 	}
 	
-	private AuraStack stack;
-	private boolean dirty = false;
+	protected AuraStack stack;
+	protected boolean dirty = false;
 	
 	@Override
 	public AuraStack backupState() {
@@ -44,6 +50,11 @@ public class UnboundedAuraContainer implements Participant<AuraStack>, AuraConta
 			if(howMuch != 0) dirty = true;
 			return stack.withAmount(howMuch);
 		} else return toWithdraw.withAmount(0);
+	}
+	
+	@Override
+	public Collection<AuraStack> contents() {
+		return Collections.singletonList(stack);
 	}
 	
 	@Override

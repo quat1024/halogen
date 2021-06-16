@@ -25,8 +25,8 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	private static final int MAX_AURA_SEND = 2; //Todo increase this a lot
 	
 	private final NodeAuraContainer container = new NodeAuraContainer(
-		new UnboundedAuraContainer(AuraStack.empty()),
-		new UnboundedAuraContainer(AuraStack.empty())
+		new BoundedHeterogenousAuraContainer(INCOMING_SIZE),
+		new BoundedHeterogenousAuraContainer(MAIN_SIZE)
 	);
 	private Set<BlockPos> bindings = new HashSet<>();
 	
@@ -45,17 +45,20 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 					continue;
 				}
 				
-				//TODO max_aura_send should proportionally adjust the amount of aura of each type
+				//TODO max_aura_send should proportionally adjust the amount of aura sent of each type
 				// Rn if there's two aura types, it just sends them both, twice as fast
 				// Also the number of bindings should affect it too.
 				AuraContainer other = otherNode.getAuraContainer();
 				try(Transaction tx = new Transaction()) {
-					//TODO: I need a forEach
-					AuraStack toSend = container.withdraw(new AuraStack(AuraType.WHITE, MAX_AURA_SEND), tx);
-					AuraStack leftoverAfterSend = other.accept(toSend, tx);
-					if(leftoverAfterSend.isEmpty()) {
-						tx.commit();
+					for(AuraStack stack : container.contents()) {
+						AuraStack toSend = container.withdraw(stack.withAmount(MAX_AURA_SEND), tx);
+						AuraStack leftoverAfterSend = other.accept(toSend, tx);
+						//Specifically put any leftovers back into the *main* chamber, not incoming
+						AuraStack leftoverAfterPutback = container.main().accept(leftoverAfterSend, tx);
+						assert leftoverAfterPutback.isEmpty();
 					}
+					
+					tx.commit();
 				}
 			}
 			
@@ -79,8 +82,6 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		if(other.getY() >= getPos().getY()) return false;
 		//Can only bind within range
 		if(other.getSquaredDistance(getPos()) > MAX_BINDING_DISTANCE * MAX_BINDING_DISTANCE) return false;
-		//Cannot bind to the same node twice (todo: make it a Set)
-		if(bindings.contains(other)) return false;
 		//Can only bind to aura nodes
 		return world.getBlockEntity(other) instanceof NodeBlockEntity;
 	}

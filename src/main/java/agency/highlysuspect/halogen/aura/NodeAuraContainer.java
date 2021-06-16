@@ -1,17 +1,12 @@
 package agency.highlysuspect.halogen.aura;
 
+import agency.highlysuspect.halogen.util.CollectionsUtil;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.nbt.NbtCompound;
 
-public class NodeAuraContainer implements SerializableAuraContainer {
-	public NodeAuraContainer(SerializableAuraContainer incoming, SerializableAuraContainer main) {
-		this.incoming = incoming;
-		this.main = main;
-	}
-	
-	SerializableAuraContainer incoming;
-	SerializableAuraContainer main;
-	
+import java.util.Collection;
+
+public record NodeAuraContainer(SerializableAuraContainer incoming, SerializableAuraContainer main) implements SerializableAuraContainer {
 	@Override
 	public AuraStack accept(AuraStack toAdd, Transaction tx) {
 		return incoming.accept(toAdd, tx);
@@ -22,18 +17,18 @@ public class NodeAuraContainer implements SerializableAuraContainer {
 		return main.withdraw(toWithdraw, tx);
 	}
 	
+	@Override
+	public Collection<AuraStack> contents() {
+		//TODO: do I need to include `incoming`'s contents as well?
+		// I think this is situational
+		//return CollectionsUtil.pair(incoming.contents(), main.contents());
+		return main.contents();
+	}
+	
 	public void pourIncomingIntoMain() {
-		//TODO: I need some kind of forEach
 		try(Transaction tx = new Transaction()) {
-			//Take all the white aura out of the incoming tank
-			AuraStack withdrawn = incoming.withdraw(new AuraStack(AuraType.WHITE, Integer.MAX_VALUE), tx);
-			//Dump as much as will fit into the main tank
-			AuraStack leftover = main.accept(withdrawn, tx);
-			//If it didn't all fit, keep the remainder in the incoming tank
-			leftover = incoming.accept(leftover, tx);
-			if(leftover.isEmpty()) {
-				tx.commit();
-			}
+			incoming.pourInto(main, tx);
+			tx.commit();
 		}
 	}
 	
