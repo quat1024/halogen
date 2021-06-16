@@ -11,6 +11,7 @@ public class UnboundedAuraContainer implements Participant<AuraStack>, AuraConta
 	}
 	
 	private AuraStack stack;
+	private boolean dirty = false;
 	
 	@Override
 	public AuraStack backupState() {
@@ -28,6 +29,7 @@ public class UnboundedAuraContainer implements Participant<AuraStack>, AuraConta
 		
 		if(stack.canMerge(toAdd)) {
 			stack.mutGrow(toAdd.amount());
+			dirty = true;
 			return toAdd.withAmount(0);
 		} else return toAdd;
 	}
@@ -39,6 +41,7 @@ public class UnboundedAuraContainer implements Participant<AuraStack>, AuraConta
 		if(stack.canMerge(toWithdraw)) {
 			int howMuch = Math.min(stack.amount(), toWithdraw.amount());
 			stack.mutShrink(howMuch);
+			if(howMuch != 0) dirty = true;
 			return stack.withAmount(howMuch);
 		} else return toWithdraw.withAmount(0);
 	}
@@ -53,5 +56,16 @@ public class UnboundedAuraContainer implements Participant<AuraStack>, AuraConta
 	@Override
 	public void readNbt(NbtCompound nbt) {
 		stack = AuraStack.fromTag(nbt.getCompound("aura"));
+		dirty = true;
+	}
+	
+	@Override
+	public boolean isDirty() {
+		return dirty;
+	}
+	
+	@Override
+	public void clean() {
+		dirty = false;
 	}
 }

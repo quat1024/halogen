@@ -50,4 +50,15 @@ public class NodeAuraContainer implements SerializableAuraContainer {
 		incoming.readNbt(nbt.getCompound("incoming"));
 		main.readNbt(nbt.getCompound("main"));
 	}
+	
+	@Override
+	public boolean isDirty() {
+		return incoming.isDirty() || main.isDirty();
+	}
+	
+	@Override
+	public void clean() {
+		incoming.clean();
+		main.clean();
+	}
 }

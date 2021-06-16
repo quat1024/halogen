@@ -33,8 +33,6 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	private List<BlockPos> bindings = new ArrayList<>();
 	
 	public void tickServer(World world, BlockPos pos, BlockState state) {
-		markDirty(); //TODO chill with the markdirties
-		
 		long mod = world.getTime() % TICK_INTERVAL;
 		if(mod == 0) {
 			ListIterator<BlockPos> poserator = bindings.listIterator();
@@ -44,7 +42,9 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 				
 				if(!(world.getBlockEntity(binding) instanceof NodeBlockEntity otherNode)) {
 					//Remove the binding since whatever's here is not a node anymore.
+					//(doing it through the iterator instead of unbindFrom, since i'm iterating the list rn)
 					poserator.remove();
+					markDirty();
 					continue;
 				}
 				
@@ -64,6 +64,11 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		} else if(mod == 1) {
 			container.pourIncomingIntoMain();
 		}
+		
+		if(container.isDirty()) {
+			container.clean();
+			markDirty();
+		}
 	}
 	
 	public boolean isValidBinding(BlockPos other) {
@@ -75,8 +80,24 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		if(other.getY() >= getPos().getY()) return false;
 		//Can only bind within range
 		if(other.getSquaredDistance(getPos()) > MAX_BINDING_DISTANCE * MAX_BINDING_DISTANCE) return false;
+		//Cannot bind to the same node twice (todo: make it a Set)
+		if(bindings.contains(other)) return false;
 		//Can only bind to aura nodes
 		return world.getBlockEntity(other) instanceof NodeBlockEntity;
+	}
+	
+	public void bindTo(BlockPos other) {
+		assert isValidBinding(other);
+		
+		bindings.add(other);
+		markDirty();
+	}
+	
+	public void unbindFrom(BlockPos other) {
+		assert bindings.contains(other);
+		
+		bindings.remove(other);
+		markDirty();
 	}
 	
 	public boolean onLinkingWand(BlockPos other) {
@@ -85,10 +106,8 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		if(!isValidBinding(other)) return false;
 		
 		if(!world.isClient) {
-			if(bindings.contains(other)) bindings.remove(other);
-			else bindings.add(other);
-			
-			markDirty();
+			if(bindings.contains(other)) unbindFrom(other);
+			else bindTo(other);
 		}
 		
 		return true;
