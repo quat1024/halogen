@@ -8,9 +8,7 @@ public class Transaction implements AutoCloseable {
 	Map<Participant<?>, Object> participantStates = new IdentityHashMap<>();
 	
 	public <T> void enlist(Participant<T> participant) {
-		if(open) {
-			participantStates.computeIfAbsent(participant, Participant::backupState);
-		}
+		participantStates.computeIfAbsent(participant, Participant::backupState);
 	}
 	
 	public void commit() {
