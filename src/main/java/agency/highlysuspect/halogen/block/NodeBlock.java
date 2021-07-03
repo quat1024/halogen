@@ -1,8 +1,6 @@
 package agency.highlysuspect.halogen.block;
 
 import agency.highlysuspect.halogen.aura.AuraContainer;
-import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.AuraType;
 import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.block.entity.NodeBlockEntity;
 import agency.highlysuspect.halogen.block.entity.TickerUtil;

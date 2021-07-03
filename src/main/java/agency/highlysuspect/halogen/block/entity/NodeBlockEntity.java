@@ -1,6 +1,9 @@
 package agency.highlysuspect.halogen.block.entity;
 
-import agency.highlysuspect.halogen.aura.*;
+import agency.highlysuspect.halogen.aura.AuraContainer;
+import agency.highlysuspect.halogen.aura.AuraStack;
+import agency.highlysuspect.halogen.aura.BoundedHeterogenousAuraContainer;
+import agency.highlysuspect.halogen.aura.NodeAuraContainer;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.NbtHelper2;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
@@ -10,7 +13,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	public NodeBlockEntity(BlockPos pos, BlockState state) {

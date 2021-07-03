@@ -1,6 +1,5 @@
 package agency.highlysuspect.halogen.aura;
 
-import agency.highlysuspect.halogen.util.CollectionsUtil;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.nbt.NbtCompound;
 
