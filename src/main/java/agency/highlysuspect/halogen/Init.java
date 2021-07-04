@@ -3,6 +3,7 @@ package agency.highlysuspect.halogen;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.item.HaloItems;
+import agency.highlysuspect.halogen.worldgen.HaloFeatures;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,8 @@ public class Init implements ModInitializer {
 		HaloBlockEntityTypes.onInitialize();
 		
 		HaloItems.onInitialize();
+		
+		HaloFeatures.onInitialize();
 	}
 	
 	public static Identifier id(String path) {
