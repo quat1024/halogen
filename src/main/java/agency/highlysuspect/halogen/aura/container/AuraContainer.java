@@ -12,25 +12,27 @@ public interface AuraContainer {
 	 * Insert this much aura into the container.
 	 *
 	 * @return The leftover portion of aura that was *not* inserted into the container.
-	 * Can be different from, but not larger than, the "aura" parameter.
+	 * The aura stack's key must be the same.
+	 * The aura stack's amount can be less than or equal to toAdd's amount.
 	 */
 	<T> AuraStack<T> accept(AuraStack<T> toAdd, Transaction tx);
 	
 	/**
 	 * Take this much aura out of the container.
 	 *
-	 * @return The amount of aura that was *just withdrawn from* the container.
-	 * Can be different from, but not larger than, the "aura" parameter.
+	 * @return The portion of aura that was *just withdrawn from* the container.
+	 * The aura stack's key must be the same.
+	 * The aura stack's amount can be less than or equal to toWithdraw's amount.
 	 */
 	<T> AuraStack<T> withdraw(AuraStack<T> toWithdraw, Transaction tx);
 	
 	/**
-	 * @return A view into the contents of this aura container.
+	 * @return A view over the contents of this aura container.
 	 */
 	Collection<AuraStack<?>> contents();
 	
 	/**
-	 * @return A view into the contents of this aura container, such that it is safe to modify the container and iterate this collection at the same time.
+	 * @return A view over the contents of this aura container, such that it is safe to modify the container and iterate this collection at the same time.
 	 */
 	default Collection<AuraStack<?>> contentsCopy() {
 		return new ArrayList<>(contents());
