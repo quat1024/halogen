@@ -1,15 +1,16 @@
-package agency.highlysuspect.halogen.aura;
+package agency.highlysuspect.halogen.aura.container;
 
+import agency.highlysuspect.halogen.aura.AuraMap;
+import agency.highlysuspect.halogen.aura.AuraStack;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
-
-import java.util.List;
+import com.mojang.serialization.Codec;
 
 public class BoundedHeterogeneousAuraContainer extends UnboundedHeterogeneousAuraContainer {
 	public BoundedHeterogeneousAuraContainer(int maxSize) {
 		this.maxSize = maxSize;
 	}
 	
-	public BoundedHeterogeneousAuraContainer(List<AuraStack> contents, int maxSize) {
+	public BoundedHeterogeneousAuraContainer(AuraMap contents, int maxSize) {
 		super(contents);
 		this.maxSize = maxSize;
 	}
@@ -17,7 +18,7 @@ public class BoundedHeterogeneousAuraContainer extends UnboundedHeterogeneousAur
 	protected final int maxSize;
 	
 	@Override
-	public AuraStack accept(AuraStack toAdd, Transaction tx) {
+	public <T> AuraStack<T> accept(AuraStack<T> toAdd, Transaction tx) {
 		tx.enlist(this);
 		
 		if(toAdd.isEmpty()) return toAdd;
@@ -29,11 +30,18 @@ public class BoundedHeterogeneousAuraContainer extends UnboundedHeterogeneousAur
 		int amountToAdd = Math.min(toAdd.amount(), remainingSpace);
 		int leftover = toAdd.amount() - amountToAdd;
 		
-		findOrCreateOfType(toAdd).mutGrow(amountToAdd);
+		if(amountToAdd > 0) {
+			contents.modify(toAdd.key(), s -> s.grownBy(amountToAdd));
+			dirty = true;
+		}
 		
 		assert occupiedSpace + amountToAdd == computeTotalVolume();
 		assert leftover >= 0;
 		
 		return toAdd.withAmount(leftover);
+	}
+	
+	public Codec<BoundedHeterogeneousAuraContainer> sizedCodec() {
+		return AuraMap.CODEC.xmap(map -> new BoundedHeterogeneousAuraContainer(map, maxSize), c -> c.contents);
 	}
 }

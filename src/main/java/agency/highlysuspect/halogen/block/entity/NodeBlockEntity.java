@@ -1,15 +1,17 @@
 package agency.highlysuspect.halogen.block.entity;
 
-import agency.highlysuspect.halogen.aura.AuraContainer;
+import agency.highlysuspect.halogen.Init;
+import agency.highlysuspect.halogen.aura.container.AuraContainer;
 import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.BoundedHeterogeneousAuraContainer;
-import agency.highlysuspect.halogen.aura.NodeAuraContainer;
+import agency.highlysuspect.halogen.aura.container.BoundedHeterogeneousAuraContainer;
+import agency.highlysuspect.halogen.aura.container.NodeAuraContainer;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.NbtHelper2;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -28,15 +30,15 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	private static final int MAX_BINDING_DISTANCE = 10;
 	private static final int MAX_AURA_SEND = 2; //Todo increase this a lot
 	
-	private final NodeAuraContainer container = new NodeAuraContainer(
+	private NodeAuraContainer container = new NodeAuraContainer(
 		new BoundedHeterogeneousAuraContainer(INCOMING_SIZE),
 		new BoundedHeterogeneousAuraContainer(MAIN_SIZE)
 	);
 	private Set<BlockPos> bindings = new HashSet<>();
 	
 	public void tickServer(World world, BlockPos pos, BlockState state) {
-		long mod = world.getTime() % TICK_INTERVAL;
-		if(mod == 0) {
+		long phase = world.getTime() % TICK_INTERVAL;
+		if(phase == 0) {
 			HashSet<BlockPos> bindingsToRemove = null;
 			
 			for(BlockPos binding : bindings) {
@@ -54,12 +56,10 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 				// Also the number of bindings should affect it too.
 				AuraContainer other = otherNode.getAuraContainer();
 				try(Transaction tx = new Transaction()) {
-					for(AuraStack stack : container.contentsCopy()) {
-						AuraStack toSend = container.withdraw(stack.withAmount(MAX_AURA_SEND), tx);
-						AuraStack leftoverAfterSend = other.accept(toSend, tx);
-						//Specifically put any leftovers back into the *main* chamber, not incoming
-						AuraStack leftoverAfterPutback = container.main().accept(leftoverAfterSend, tx);
-						assert leftoverAfterPutback.isEmpty();
+					for(AuraStack<?> stack : container.contentsCopy()) {
+						AuraStack<?> toSend = stack.reduceToAtMost(MAX_AURA_SEND);
+						AuraStack<?> leftover = container.pourStackIntoOverflow(toSend, other, container.main(), tx);
+						assert leftover.isEmpty();
 					}
 					
 					tx.commit();
@@ -67,7 +67,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 			}
 			
 			if(bindingsToRemove != null) bindingsToRemove.forEach(this::unbindFrom);
-		} else if(mod == 1) {
+		} else if(phase == 1) {
 			container.pourIncomingIntoMain();
 		}
 		
@@ -124,7 +124,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	
 	@Override
 	public NbtCompound writeNbt(NbtCompound nbt) {
-		nbt.put("aura", container.writeNbt());
+		nbt.put("aura", container.codec.encodeStart(NbtOps.INSTANCE, container).getOrThrow(false, Init.LOG::error));
 		nbt.put("bindings", NbtHelper2.fromBlockPosSet(bindings));
 		return super.writeNbt(nbt);
 	}
@@ -132,7 +132,7 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	@Override
 	public void readNbt(NbtCompound nbt) {
 		super.readNbt(nbt);
-		container.readNbt(nbt.getCompound("aura"));
+		container = container.codec.parse(NbtOps.INSTANCE, nbt.get("aura")).getOrThrow(false, Init.LOG::error);
 		bindings = NbtHelper2.toBlockPosHashSet(nbt.getList("bindings", 10));
 	}
 }

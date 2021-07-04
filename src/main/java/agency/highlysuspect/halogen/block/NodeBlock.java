@@ -1,6 +1,6 @@
 package agency.highlysuspect.halogen.block;
 
-import agency.highlysuspect.halogen.aura.AuraContainer;
+import agency.highlysuspect.halogen.aura.container.AuraContainer;
 import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.block.entity.NodeBlockEntity;
 import agency.highlysuspect.halogen.block.entity.TickerUtil;
@@ -45,7 +45,7 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return;
 		
 		try(Transaction tx = new Transaction()) {
-			boolean allFit = containerHaver.getAuraContainer().pourInto(nodeContainer, tx);
+			boolean allFit = containerHaver.getAuraContainer().pourAllInto(nodeContainer, tx);
 			if(allFit) {
 				tx.commit();
 				
@@ -66,7 +66,7 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 		
 		if(!world.isClient) {
 			try(Transaction tx = new Transaction()) {
-				boolean allFit = containerHaver.getAuraContainer().pourInto(nodeContainer, tx);
+				boolean allFit = containerHaver.getAuraContainer().pourAllInto(nodeContainer, tx);
 				
 				if(allFit) {
 					tx.commit();

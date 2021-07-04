@@ -1,115 +1,76 @@
 package agency.highlysuspect.halogen.aura;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
-
-import java.util.Objects;
+import agency.highlysuspect.halogen.Init;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 
 //Less a literal "stack" of anything, more "by analogy with ItemStack".
-public final class AuraStack {
-	private final AuraType type;
-	private int amount;
-	
-	public AuraStack(AuraType type, int amount) {
-		this.type = type;
-		this.amount = amount;
+public final record AuraStack<T>(AuraKey<T> key, int amount) {
+	public AuraStack {
+		assert amount >= 0 : "Negative amount " + amount;
 	}
 	
-	public static AuraStack empty() {
-		return new AuraStack(AuraType.WHITE, 0);
+	public static final Codec<AuraStack<?>> CODEC = RecordCodecBuilder.create(i -> i.group(
+		AuraKey.CODEC.fieldOf("key").forGetter(AuraStack::key),
+		Codec.INT.fieldOf("amount").forGetter(AuraStack::amount)
+	).apply(i, AuraStack::new));
+	
+	//withers
+	public <X> AuraStack<X> withKey(AuraKey<X> newKey) {
+		return new AuraStack<>(newKey, amount);
 	}
 	
-	public AuraStack copy() {
-		return new AuraStack(type, amount);
+	public AuraStack<T> withAmount(int newAmount) {
+		return new AuraStack<>(key, newAmount);
 	}
 	
-	public AuraStack mutGrow(int howMuch) {
-		amount += howMuch;
-		return this;
+	public AuraStack<T> grownBy(int howMuch) {
+		return new AuraStack<>(key, amount + howMuch);
 	}
 	
-	public AuraStack mutShrink(int howMuch) {
-		amount -= howMuch;
-		assert amount >= 0;
-		return this;
+	public AuraStack<T> grownBy(AuraStack<T> other) {
+		assert canMerge(other);
+		return grownBy(other.amount);
 	}
 	
-	public AuraStack withType(AuraType newType) {
-		return new AuraStack(newType, amount);
+	public AuraStack<T> shrunkBy(int howMuch) {
+		assert amount - howMuch >= 0 : "Shrinking AuraStack by " + howMuch + " would make its size " + (amount - howMuch);
+		return new AuraStack<>(key, amount - howMuch);
 	}
 	
-	public AuraStack withAmount(int newAmount) {
-		assert newAmount >= 0;
-		return new AuraStack(type, newAmount);
+	public AuraStack<T> shrunkBy(AuraStack<T> other) {
+		assert canMerge(other);
+		return shrunkBy(other.amount);
 	}
 	
-	public boolean hasAtLeast(int howMuch) {
-		return amount >= howMuch;
+	public AuraStack<T> reduceToAtMost(int howMuch) {
+		if(amount > howMuch) return withAmount(howMuch);
+		else return this;
 	}
 	
+	//merging, emptiness
 	public boolean isEmpty() {
 		return amount == 0;
 	}
 	
-	public boolean canMerge(AuraStack other) {
-		return this.isEmpty() || other.isEmpty() || type.equals(other.type);
+	public boolean canMerge(AuraStack<?> other) {
+		return key.equals(other.key);
 	}
 	
-	public AuraStack add(AuraStack other) {
-		assert canMerge(other);
-		
-		if(this.isEmpty()) return other;
-		if(other.isEmpty()) return this;
-		return mutGrow(other.amount);
+	//Only a valid operation when canMerge is true.
+	public <X> AuraStack<X> castKey() {
+		//noinspection unchecked
+		return (AuraStack<X>) this;
 	}
 	
-	public AuraType type() {
-		return type;
+	//For convenience. Please use e.g. codec.listOf instead of calling this a bunch and writing to an nbt list yourself.
+	public NbtElement toNbt() {
+		return CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow(false, Init.LOG::error);
 	}
 	
-	public int amount() {
-		return amount;
-	}
-	
-	public NbtCompound toTag() {
-		NbtCompound nbt = toTypelessTag();
-		nbt.putString("type", AuraType.REGISTRY.getId(type).toString());
-		return nbt;
-	}
-	
-	public NbtCompound toTypelessTag() {
-		NbtCompound nbt = new NbtCompound();
-		nbt.putInt("amount", amount);
-		return nbt;
-	}
-	
-	public static AuraStack fromTag(NbtCompound nbt) {
-		AuraType type = AuraType.REGISTRY.get(Identifier.tryParse(nbt.getString("type")));
-		return fromTypelessTag(type, nbt);
-	}
-	
-	public static AuraStack fromTypelessTag(AuraType type, NbtCompound nbt) {
-		return new AuraStack(type, nbt.getInt("amount"));
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		if(obj == null || obj.getClass() != this.getClass()) return false;
-		var that = (AuraStack) obj;
-		return Objects.equals(this.type, that.type) &&
-			this.amount == that.amount;
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(type, amount);
-	}
-	
-	@Override
-	public String toString() {
-		return "AuraStack[" +
-			"type=" + type + ", " +
-			"amount=" + amount + ']';
+	public static AuraStack<?> fromNbt(NbtElement elem) {
+		return CODEC.parse(NbtOps.INSTANCE, elem).getOrThrow(false, Init.LOG::error);
 	}
 }
