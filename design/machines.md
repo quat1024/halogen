@@ -13,15 +13,15 @@ The amount of aura, as well as the angle of incidence (!) to the functional node
 
 # Funny furnace machine
 
-####I cooka da pizza
+#### I cooka da pizza
 
-####I cooka da pizza
+#### I cooka da pizza
 
-####I cooka da pizza
+#### I cooka da pizza
 
 In-world smelting probably, idk? Given enough work it will cook some (randomly chosen, if ambiguous) items dropped nearby. Could be like a "vanilla furnace exciter" as well although that's a bit done to death these days
 
-####I cooka da pizza
+#### I cooka da pizza
 
 # Funny block placer machine
 
