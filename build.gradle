@@ -56,6 +56,10 @@ task runGenerator(type: net.fabricmc.loom.task.RunClientTask, dependsOn: downloa
 	classpath sourceSets.gen.output
 }
 
+task cleanGenerator(type: Delete, group: "halogen") {
+	delete sourceSets.gen_out.resources.srcDirs
+}
+
 processResources {
 	inputs.property "version", project.version
 

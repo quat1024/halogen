@@ -24,7 +24,7 @@ public class BlockDropGen implements DataProvider{
 	@Override
 	public void run(DataCache cache) throws IOException {
 		doItAll(cache,
-			ImmutableList.of(HaloBlocks.BASIC_NODE)
+			ImmutableList.of(HaloBlocks.NODE)
 		);
 	}
 	

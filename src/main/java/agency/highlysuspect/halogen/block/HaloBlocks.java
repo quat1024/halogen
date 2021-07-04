@@ -7,7 +7,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.registry.Registry;
 
 public class HaloBlocks {
-	public static final NodeBlock BASIC_NODE = reg("basic_node", new NodeBlock(
+	public static final NodeBlock NODE = reg("node", new NodeBlock(
 		AbstractBlock.Settings.copy(Blocks.STONE)
 			.blockVision((state, world, pos) -> false)
 	));

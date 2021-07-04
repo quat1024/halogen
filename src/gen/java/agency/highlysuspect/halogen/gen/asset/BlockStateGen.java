@@ -18,7 +18,7 @@ import java.nio.file.Path;
 public class BlockStateGen implements DataProvider {
 	@Override
 	public void run(DataCache cache) throws IOException {
-		write(cache, model(HaloBlocks.BASIC_NODE));
+		write(cache, model(HaloBlocks.NODE));
 	}
 	
 	//All blockstates map to this block model.

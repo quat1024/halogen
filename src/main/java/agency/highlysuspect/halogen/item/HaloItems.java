@@ -14,7 +14,7 @@ import net.minecraft.util.registry.Registry;
 public class HaloItems {
 	public static final ItemGroup GROUP = FabricItemGroupBuilder.build(Init.id("group"), HaloItems::icon);
 	
-	public static final BlockItem BASIC_NODE = blockItem(HaloBlocks.BASIC_NODE);
+	public static final BlockItem NODE = blockItem(HaloBlocks.NODE);
 	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(AuraType.WHITE.makeStack(10), settings()));
 	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(AuraType.RED.makeStack(10), settings()));
 	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(AuraType.BLUE.makeStack(100), settings()));
@@ -33,7 +33,7 @@ public class HaloItems {
 	}
 	
 	private static ItemStack icon() {
-		return new ItemStack(BASIC_NODE);
+		return new ItemStack(NODE);
 	}
 	
 	public static void onInitialize() {
