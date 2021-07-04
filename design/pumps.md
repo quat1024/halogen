@@ -27,7 +27,14 @@ Is "excited" a *state* of aura, or a separate *type*? Can all aura types become 
 
 Pumps consume some resource to charge them; while charged they can send aura upwards. The charge decreases proportional to the amount of aura sent, and maybe it decays over time a little too. This is where I try to mirror botania's philosophy behind generating flowers lol, they kinda occupy the same design space.
 
-* Can i pull off a low-powered passive pump without falling into the daybloom trap???????? idk????
-* growth pump. Charges when plants or trees grow in a nearby area.
-* Fall damage pump lol
-	* AC had something where mobs just fall*ing* nearby would pump, but that do be kinda passive though
+# Pasive????
+
+Can i pull off a low-powered passive pump without falling into the daybloom trap???????? idk????
+
+# Growth
+
+Charges when plants or trees grow in a nearby area. Growth happens upwards, aura goes upwards, makes sense
+
+# Fall damage pump lol
+
+AC had something where mobs just fall*ing* nearby would pump, but that's a little passive. I think a pump powered by things taking fall *damage* could be interesting and I like the up/down feeling where a powerful downward motion allows for the upward motion.
