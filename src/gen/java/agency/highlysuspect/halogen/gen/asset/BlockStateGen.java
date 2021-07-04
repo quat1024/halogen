@@ -19,6 +19,8 @@ public class BlockStateGen implements DataProvider {
 	@Override
 	public void run(DataCache cache) throws IOException {
 		write(cache, model(HaloBlocks.NODE));
+		write(cache, model(HaloBlocks.LARGE_MOONLIGHT_PRISM));
+		write(cache, model(HaloBlocks.SMALL_MOONLIGHT_PRISM));
 	}
 	
 	//All blockstates map to this block model.

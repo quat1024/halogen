@@ -19,40 +19,58 @@ import net.minecraft.util.registry.Registry;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public class BlockDropGen implements DataProvider{
 	@Override
 	public void run(DataCache cache) throws IOException {
-		doItAll(cache,
+		writeSelfDrop(cache,
 			ImmutableList.of(HaloBlocks.NODE)
+		);
+		
+		writeNoDrop(cache,
+			ImmutableList.of(
+				HaloBlocks.LARGE_MOONLIGHT_PRISM,
+				HaloBlocks.SMALL_MOONLIGHT_PRISM
+			)
 		);
 	}
 	
 	@SafeVarargs
-	private void doItAll(DataCache cache, Iterable<? extends Block>... listOfLists) throws IOException {
-		for(Iterable<? extends Block> list : listOfLists) {
-			for(Block b : list) {
-				Identifier id = Registry.BLOCK.getId(b);
-				LootTable dropTable = drops(b);
-				DataProvider.writeToPath(GenInit.GSON, cache, LootManager.toJson(dropTable), outPath(id));
-			}
-		}
+	private void writeSelfDrop(DataCache cache, Iterable<? extends Block>... listOfLists) throws IOException {
+		iterateWrite(this::drops, cache, listOfLists);
 	}
 	
-	private Path outPath(Identifier id) {
+	@SafeVarargs
+	private void writeNoDrop(DataCache cache, Iterable<? extends Block>... listOfLists) throws IOException {
+		iterateWrite((__) -> dropsNothing(), cache, listOfLists);
+	}
+	
+	@SafeVarargs
+	private static void iterateWrite(Function<Block, LootTable.Builder> funny, DataCache cache, Iterable<? extends Block>... listOfLists) throws IOException {
+		for(Iterable<? extends Block> list : listOfLists) for(Block b : list) write(cache, b, funny.apply(b));
+	}
+	
+	private static void write(DataCache cache, Block b, LootTable.Builder builder) throws IOException {
+		Identifier id = Registry.BLOCK.getId(b);
+		DataProvider.writeToPath(GenInit.GSON, cache, LootManager.toJson(builder.type(LootContextTypes.BLOCK).build()), outPath(id));
+	}
+	
+	private static Path outPath(Identifier id) {
 		return GenInit.OUT_ROOT.resolve("data/" + id.getNamespace() + "/loot_tables/blocks/" + id.getPath() + ".json");
 	}
 	
-	private LootTable drops(ItemConvertible drop) {
-		//Copy and paste of private "drops(ItemConvertible drop)" from BlockLootTableGenerator.
-		//Also from there, private method addSurvivesExplosionCondition(ItemConvertible, LootConditionConsumingBuilder<T>) pasted into this class and inlined with intellij.
-		//Im sorry
+	////
+	
+	private LootTable.Builder drops(ItemConvertible drop) {
 		return LootTable.builder().pool(
 			LootPool.builder().rolls(ConstantLootNumberProvider.create(1))
 				.with(ItemEntry.builder(drop))
-				.conditionally(SurvivesExplosionLootCondition.builder()))
-			.type(LootContextTypes.BLOCK)
-			.build();
+				.conditionally(SurvivesExplosionLootCondition.builder()));
+	}
+	
+	private LootTable.Builder dropsNothing() {
+		return LootTable.builder();
 	}
 	
 	@Override

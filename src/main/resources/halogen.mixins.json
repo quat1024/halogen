@@ -1,9 +1,10 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.fabricmc.example.mixin",
+  "package": "agency.highlysuspect.halogen.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+		"GeodeFeatureMixin"
   ],
   "client": [
   ],

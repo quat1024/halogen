@@ -12,6 +12,10 @@ public class HaloBlocks {
 			.blockVision((state, world, pos) -> false)
 	));
 	
+	//todo real blocks
+	public static final Block LARGE_MOONLIGHT_PRISM = reg("large_moonlight_prism", new Block(AbstractBlock.Settings.copy(Blocks.STONE)));
+	public static final Block SMALL_MOONLIGHT_PRISM = reg("small_moonlight_prism", new Block(AbstractBlock.Settings.copy(Blocks.STONE)));
+	
 	private static <B extends Block> B reg(String idPath, B b) {
 		return Registry.register(Registry.BLOCK, Init.id(idPath), b);
 	}

@@ -29,6 +29,8 @@ public class ItemModelGen implements DataProvider {
 		yeetCache = cache;
 		
 		itemWithBlockModelParent(HaloBlocks.NODE, cache);
+		itemWithBlockModelParent(HaloBlocks.LARGE_MOONLIGHT_PRISM, cache);
+		itemWithBlockModelParent(HaloBlocks.SMALL_MOONLIGHT_PRISM, cache);
 		
 		layer0(HaloItems.LINKING_WAND, this::write);
 		layer0(HaloItems.WHITE_AURA_CRYSTAL, this::write);

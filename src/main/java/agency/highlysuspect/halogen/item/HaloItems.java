@@ -15,6 +15,8 @@ public class HaloItems {
 	public static final ItemGroup GROUP = FabricItemGroupBuilder.build(Init.id("group"), HaloItems::icon);
 	
 	public static final BlockItem NODE = blockItem(HaloBlocks.NODE);
+	public static final BlockItem LARGE_MOONLIGHT_PRISM = blockItem(HaloBlocks.LARGE_MOONLIGHT_PRISM);
+	public static final BlockItem SMALL_MOONLIGHT_PRISM = blockItem(HaloBlocks.SMALL_MOONLIGHT_PRISM);
 	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(AuraType.WHITE.stackOf(10), settings()));
 	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(AuraType.RED.stackOf(10), settings()));
 	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(AuraType.BLUE.stackOf(100), settings()));
