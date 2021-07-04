@@ -21,11 +21,7 @@ public class AuraType {
 		return Registry.register(REGISTRY, id, type);
 	}
 	
-	public AuraStack makeStack(int amount) {
+	public AuraStack stackOf(int amount) {
 		return new AuraStack(this, amount);
-	}
-	
-	public AuraStack makeEmptyStack() {
-		return makeStack(0);
 	}
 }

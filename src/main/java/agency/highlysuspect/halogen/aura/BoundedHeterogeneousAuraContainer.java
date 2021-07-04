@@ -4,12 +4,12 @@ import agency.highlysuspect.halogen.util.transaction.Transaction;
 
 import java.util.List;
 
-public class BoundedHeterogenousAuraContainer extends UnboundedHeterogenousAuraContainer {
-	public BoundedHeterogenousAuraContainer(int maxSize) {
+public class BoundedHeterogeneousAuraContainer extends UnboundedHeterogeneousAuraContainer {
+	public BoundedHeterogeneousAuraContainer(int maxSize) {
 		this.maxSize = maxSize;
 	}
 	
-	public BoundedHeterogenousAuraContainer(List<AuraStack> contents, int maxSize) {
+	public BoundedHeterogeneousAuraContainer(List<AuraStack> contents, int maxSize) {
 		super(contents);
 		this.maxSize = maxSize;
 	}

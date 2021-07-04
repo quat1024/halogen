@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class UnboundedHeterogenousAuraContainer implements Participant<List<AuraStack>>, SerializableAuraContainer {
-	public UnboundedHeterogenousAuraContainer() {
+public class UnboundedHeterogeneousAuraContainer implements Participant<List<AuraStack>>, SerializableAuraContainer {
+	public UnboundedHeterogeneousAuraContainer() {
 		this.contents = new ArrayList<>();
 	}
 	
-	public UnboundedHeterogenousAuraContainer(List<AuraStack> contents) {
+	public UnboundedHeterogeneousAuraContainer(List<AuraStack> contents) {
 		//defensive copy, smh my horns
 		this.contents = new ArrayList<>(contents);
 		filterEmpties();

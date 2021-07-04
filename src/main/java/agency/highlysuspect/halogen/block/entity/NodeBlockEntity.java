@@ -2,7 +2,7 @@ package agency.highlysuspect.halogen.block.entity;
 
 import agency.highlysuspect.halogen.aura.AuraContainer;
 import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.BoundedHeterogenousAuraContainer;
+import agency.highlysuspect.halogen.aura.BoundedHeterogeneousAuraContainer;
 import agency.highlysuspect.halogen.aura.NodeAuraContainer;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.NbtHelper2;
@@ -29,8 +29,8 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	private static final int MAX_AURA_SEND = 2; //Todo increase this a lot
 	
 	private final NodeAuraContainer container = new NodeAuraContainer(
-		new BoundedHeterogenousAuraContainer(INCOMING_SIZE),
-		new BoundedHeterogenousAuraContainer(MAIN_SIZE)
+		new BoundedHeterogeneousAuraContainer(INCOMING_SIZE),
+		new BoundedHeterogeneousAuraContainer(MAIN_SIZE)
 	);
 	private Set<BlockPos> bindings = new HashSet<>();
 	
