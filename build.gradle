@@ -50,10 +50,18 @@ sourceSets {
 	}
 }
 
-task runGenerator(type: net.fabricmc.loom.task.RunClientTask, dependsOn: downloadAssets, group: "halogen") {
-	classpath = configurations.runtimeClasspath
-	classpath sourceSets.main.output
-	classpath sourceSets.gen.output
+loom {
+	runs {
+		datagen {
+			server()
+			runDir "datagen-workdir"
+			
+			//property "datagen.out", sourceSets.gen_out.resources.srcDirs[0] //Gradle couldn't parse my buildscript with this? lol idk
+			vmArg "-Ddatagen.out=${sourceSets.gen_out.resources.srcDirs[0]}"
+			
+			source sourceSets.gen
+		}
+	}
 }
 
 task cleanGenerator(type: Delete, group: "halogen") {

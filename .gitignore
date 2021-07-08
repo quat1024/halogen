@@ -34,3 +34,6 @@ run/
 
 # Krita poops these sorts of files all over the place
 *.png~
+
+# The data generator spins up a temporary minecraft server, and it needs somewhere to poop its temporary files
+datagen-workdir/

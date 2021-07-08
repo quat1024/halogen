@@ -6,9 +6,8 @@ import agency.highlysuspect.halogen.gen.data.BlockDropGen;
 import agency.highlysuspect.halogen.gen.data.RecipeGen;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
 import net.minecraft.data.DataGenerator;
-import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,13 +16,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
-public class GenInit implements ClientModInitializer {
+public class GenInit implements ModInitializer {
 	public static final Logger LOG = LogManager.getLogger("halogen-gen");
-	public static final Path OUT_ROOT = Paths.get("../src/gen_out/resources"); //Lol hope it works
+	public static final Path OUT_ROOT = Paths.get(System.getProperty("datagen.out"));
 	public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 	
 	@Override
-	public void onInitializeClient() {
+	public void onInitialize() {
 		try {
 			Files.createDirectories(OUT_ROOT);
 			

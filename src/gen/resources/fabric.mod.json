@@ -16,7 +16,7 @@
 
   "environment": "*",
   "entrypoints": {
-    "client": [
+    "main": [
       "agency.highlysuspect.halogen.gen.GenInit"
     ]
   },
