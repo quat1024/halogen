@@ -1,7 +1,7 @@
 package agency.highlysuspect.halogen.item;
 
 import agency.highlysuspect.halogen.Init;
-import agency.highlysuspect.halogen.aura.AuraType;
+import agency.highlysuspect.halogen.aura.HaloAuraTypes;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.block.Block;
@@ -17,9 +17,9 @@ public class HaloItems {
 	public static final BlockItem NODE = blockItem(HaloBlocks.NODE);
 	public static final BlockItem LARGE_MOONLIGHT_PRISM = blockItem(HaloBlocks.LARGE_MOONLIGHT_PRISM);
 	public static final BlockItem SMALL_MOONLIGHT_PRISM = blockItem(HaloBlocks.SMALL_MOONLIGHT_PRISM);
-	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(AuraType.WHITE.stackOf(10), settings()));
-	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(AuraType.RED.stackOf(10), settings()));
-	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(AuraType.BLUE.stackOf(100), settings()));
+	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(HaloAuraTypes.WHITE.stackOf(10), settings()));
+	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(HaloAuraTypes.RED.stackOf(10), settings()));
+	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(HaloAuraTypes.BLUE.stackOf(100), settings()));
 	public static final LinkingWandItem LINKING_WAND = reg("linking_wand", new LinkingWandItem(settings().maxCount(1)));
 	
 	private static BlockItem blockItem(Block b) {

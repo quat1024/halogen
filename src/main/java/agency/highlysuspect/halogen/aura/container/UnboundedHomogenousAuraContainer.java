@@ -1,7 +1,7 @@
 package agency.highlysuspect.halogen.aura.container;
 
 import agency.highlysuspect.halogen.aura.AuraStack;
-import agency.highlysuspect.halogen.aura.AuraType;
+import agency.highlysuspect.halogen.aura.HaloAuraTypes;
 import agency.highlysuspect.halogen.util.Dirtyable;
 import agency.highlysuspect.halogen.util.transaction.Participant;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
@@ -12,7 +12,7 @@ import java.util.Collections;
 
 public class UnboundedHomogenousAuraContainer implements Participant<AuraStack<?>>, AuraContainer, Dirtyable {
 	public UnboundedHomogenousAuraContainer() {
-		this(AuraType.WHITE.emptyStackOf());
+		this(HaloAuraTypes.WHITE.emptyStackOf());
 	}
 	
 	public UnboundedHomogenousAuraContainer(AuraStack<?> stack) {

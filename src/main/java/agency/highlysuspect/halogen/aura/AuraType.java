@@ -1,7 +1,6 @@
 package agency.highlysuspect.halogen.aura;
 
 import agency.highlysuspect.halogen.Init;
-import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.util.Identifier;
@@ -9,34 +8,36 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
 
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public final class AuraType<T> {
 	public static final RegistryKey<Registry<AuraType<?>>> AURA_TYPE_KEY = RegistryKey.ofRegistry(Init.id("aura_type"));
 	public static final Registry<AuraType<?>> REGISTRY = new SimpleRegistry<>(AURA_TYPE_KEY, Lifecycle.stable()); //"stable"
 	
-	private static final Codec<Unit> UNIT_CODEC = Codec.unit(Unit.INSTANCE);
-	
-	public static final AuraType<Unit> WHITE = reg(Init.id("white"), new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE));
-	public static final AuraType<Unit> RED = reg(Init.id("red"), new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE));
-	public static final AuraType<Unit> BLUE = reg(Init.id("blue"), new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE));
-	
 	public AuraType(Codec<T> dataCodec, Supplier<T> defaultData) {
 		this.dataCodec = dataCodec;
 		this.defaultData = defaultData;
-		this.keyedDataCodec = dataCodec.fieldOf("data").xmap(d -> new AuraKey<>(this, d), AuraKey::data).codec();
+		
+		//this is sorta tied in a knot with AuraKey
+		//(blame mojang's Feature/ConfiguredFeature stuff, it's where i got this concept from)
+		//basically this is a codec where
+		// given myself (non-static codec) and some data, I can produce an aura key,
+		// given an aura key, I can extract the data.
+		this.dataFieldCodec = dataCodec.fieldOf("data").xmap(data -> new AuraKey<>(this, data), AuraKey::data).codec();
+		//importantly (i think), it does this without "completing" the object, i.e. it's not a RecordCodecBuilder.
+		//this means the AuraKey's registry-dispatch codec can write the aura type to the same location, and they end up together.
+		//...
+		//why does aurakey dispatch over the type of *this* class, and why does this class basically contain aurakey's actual codec? idk lol
 	}
 	
 	public final Codec<T> dataCodec;
 	public final Supplier<T> defaultData;
 	
-	public final Codec<AuraKey<T>> keyedDataCodec;
+	//pkg-private; read in AuraKey's codec, and nowhere else
+	//this little mfer is preventing the class from being a record lol
+	final Codec<AuraKey<T>> dataFieldCodec;
 	
-	public static <T> AuraType<T> reg(Identifier id, AuraType<T> type) {
-		return Registry.register(REGISTRY, id, type);
-	}
-	
+	//convenience methods
 	public AuraKey<T> keyOf() {
 		return keyOf(defaultData.get());
 	}
@@ -57,8 +58,8 @@ public final class AuraType<T> {
 		return keyOf().emptyStackOf();
 	}
 	
-	public Codec<AuraKey<T>> keyedDataCodec() {
-		return keyedDataCodec;
+	public AuraStack<T> emptyStackOf(T data) {
+		return keyOf(data).emptyStackOf();
 	}
 	
 	@Override

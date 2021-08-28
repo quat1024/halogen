@@ -1,5 +1,6 @@
 package agency.highlysuspect.halogen;
 
+import agency.highlysuspect.halogen.aura.HaloAuraTypes;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.item.HaloItems;
@@ -15,6 +16,8 @@ public class Init implements ModInitializer {
 	
 	@Override
 	public void onInitialize() {
+		HaloAuraTypes.onInitialize();
+		
 		HaloBlocks.onInitialize();
 		HaloBlockEntityTypes.onInitialize();
 		
