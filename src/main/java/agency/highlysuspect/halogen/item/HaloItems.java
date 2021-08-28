@@ -17,17 +17,30 @@ public class HaloItems {
 	public static final BlockItem NODE = blockItem(HaloBlocks.NODE);
 	public static final BlockItem LARGE_MOONLIGHT_PRISM = blockItem(HaloBlocks.LARGE_MOONLIGHT_PRISM);
 	public static final BlockItem SMALL_MOONLIGHT_PRISM = blockItem(HaloBlocks.SMALL_MOONLIGHT_PRISM);
-	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = reg("white_aura_crystal", new AuraCrystalItem(HaloAuraTypes.WHITE.stackOf(10), settings()));
-	public static final AuraCrystalItem RED_AURA_CRYSTAL = reg("red_aura_crystal", new AuraCrystalItem(HaloAuraTypes.RED.stackOf(10), settings()));
-	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = reg("blue_aura_crystal", new AuraCrystalItem(HaloAuraTypes.BLUE.stackOf(100), settings()));
-	public static final LinkingWandItem LINKING_WAND = reg("linking_wand", new LinkingWandItem(settings().maxCount(1)));
+	
+	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.WHITE.stackOf(10), settings());
+	public static final AuraCrystalItem RED_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.RED.stackOf(10), settings());
+	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.BLUE.stackOf(100), settings());
+	public static final LinkingWandItem LINKING_WAND = new LinkingWandItem(settings().maxCount(1));
 	
 	private static BlockItem blockItem(Block b) {
-		return Registry.register(Registry.ITEM, Registry.BLOCK.getId(b), new BlockItem(b, settings()));
+		return new BlockItem(b, settings());
 	}
 	
 	private static <I extends Item> I reg(String idPath, I i) {
 		return Registry.register(Registry.ITEM, Init.id(idPath), i);
+	}
+	
+	public static void onInitialize() {
+		reg("node", NODE);
+		reg("large_moonlight_prism", LARGE_MOONLIGHT_PRISM);
+		reg("small_moonlight_prism", SMALL_MOONLIGHT_PRISM);
+		
+		reg("white_aura_crystal", WHITE_AURA_CRYSTAL);
+		reg("red_aura_crystal", RED_AURA_CRYSTAL);
+		reg("blue_aura_crystal", BLUE_AURA_CRYSTAL);
+		
+		reg("linking_wand", LINKING_WAND);
 	}
 	
 	private static Item.Settings settings() {
@@ -36,9 +49,5 @@ public class HaloItems {
 	
 	private static ItemStack icon() {
 		return new ItemStack(NODE);
-	}
-	
-	public static void onInitialize() {
-		//Classload
 	}
 }

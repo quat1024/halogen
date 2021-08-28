@@ -88,7 +88,7 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-		return TickerUtil.downcastFixedTicker(type, HaloBlockEntityTypes.NODE, NodeBlockEntity::tickServer);
+		return TickerUtil.downcastTickerMemberFunc(type, HaloBlockEntityTypes.NODE, NodeBlockEntity::tickServer);
 	}
 	
 	@Override
