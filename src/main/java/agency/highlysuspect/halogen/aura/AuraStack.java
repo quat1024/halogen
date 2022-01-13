@@ -3,7 +3,9 @@ package agency.highlysuspect.halogen.aura;
 import agency.highlysuspect.halogen.Init;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 
 //Less a literal "stack" of anything, more "by analogy with ItemStack".
 public final record AuraStack<T>(AuraKey<T> key, int amount) {
@@ -65,11 +67,11 @@ public final record AuraStack<T>(AuraKey<T> key, int amount) {
 	}
 	
 	//For convenience. Please use e.g. codec.listOf instead of calling this a bunch and writing to an nbt list yourself.
-	public NbtElement toNbt() {
+	public Tag toNbt() {
 		return CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow(false, Init.LOG::error);
 	}
 	
-	public static AuraStack<?> fromNbt(NbtElement elem) {
+	public static AuraStack<?> fromNbt(Tag elem) {
 		return CODEC.parse(NbtOps.INSTANCE, elem).getOrThrow(false, Init.LOG::error);
 	}
 }
