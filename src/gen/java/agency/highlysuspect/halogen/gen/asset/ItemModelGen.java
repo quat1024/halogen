@@ -27,11 +27,9 @@ public class ItemModelGen implements DataProvider {
 	public void run(HashCache cache) throws IOException {
 		yeetCache = cache;
 		
-		itemWithBlockModelParent(HaloBlocks.NODE, cache);
 		itemWithBlockModelParent(HaloBlocks.LARGE_MOONLIGHT_PRISM, cache);
 		itemWithBlockModelParent(HaloBlocks.SMALL_MOONLIGHT_PRISM, cache);
 		
-		layer0(HaloItems.LINKING_WAND, this::write);
 		layer0(HaloItems.WHITE_AURA_CRYSTAL, this::write);
 		layer0(HaloItems.RED_AURA_CRYSTAL, this::write);
 		layer0(HaloItems.BLUE_AURA_CRYSTAL, this::write);

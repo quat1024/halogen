@@ -1,18 +1,14 @@
 package agency.highlysuspect.halogen.aura;
 
 import agency.highlysuspect.halogen.Init;
-import com.mojang.datafixers.util.Unit;
-import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 
 public class HaloAuraTypes {
-	private static final Codec<Unit> UNIT_CODEC = Codec.unit(Unit.INSTANCE);
+	public static final AuraType WHITE = new AuraType();
+	public static final AuraType RED = new AuraType();
+	public static final AuraType BLUE = new AuraType();
 	
-	public static final AuraType<Unit> WHITE = new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE);
-	public static final AuraType<Unit> RED = new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE);
-	public static final AuraType<Unit> BLUE = new AuraType<>(UNIT_CODEC, () -> Unit.INSTANCE);
-	
-	private static <T> AuraType<T> reg(String id, AuraType<T> type) {
+	private static AuraType reg(String id, AuraType type) {
 		return Registry.register(AuraType.REGISTRY, Init.id(id), type);
 	}
 	

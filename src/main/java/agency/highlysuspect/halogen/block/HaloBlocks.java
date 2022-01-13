@@ -9,12 +9,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class HaloBlocks {
-	public static final NodeBlock NODE = new NodeBlock(
-		BlockBehaviour.Properties.copy(Blocks.STONE)
-			.noOcclusion()
-			.isViewBlocking((state, world, pos) -> false)
-	);
-	
 	public static final Block LARGE_MOONLIGHT_PRISM = new MoonlightPrismBlock(
 		() -> HaloBlockEntityTypes.LARGE_MOONLIGHT_PRISM,
 		BlockBehaviour.Properties.copy(Blocks.STONE)
@@ -39,7 +33,6 @@ public class HaloBlocks {
 	}
 	
 	public static void onInitialize() {
-		reg("node", NODE);
 		reg("large_moonlight_prism", LARGE_MOONLIGHT_PRISM);
 		reg("small_moonlight_prism", SMALL_MOONLIGHT_PRISM);
 		reg("moonlight_cluster", MOONLIGHT_CLUSTER);

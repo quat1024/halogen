@@ -17,7 +17,6 @@ import java.nio.file.Path;
 public class BlockStateGen implements DataProvider {
 	@Override
 	public void run(HashCache cache) throws IOException {
-		write(cache, model(HaloBlocks.NODE));
 		write(cache, model(HaloBlocks.LARGE_MOONLIGHT_PRISM));
 		write(cache, model(HaloBlocks.SMALL_MOONLIGHT_PRISM));
 	}

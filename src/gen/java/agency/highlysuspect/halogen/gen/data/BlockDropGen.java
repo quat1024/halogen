@@ -23,10 +23,6 @@ import java.util.function.Function;
 public class BlockDropGen implements DataProvider{
 	@Override
 	public void run(HashCache cache) throws IOException {
-		writeSelfDrop(cache,
-			ImmutableList.of(HaloBlocks.NODE)
-		);
-		
 		writeNoDrop(cache,
 			ImmutableList.of(
 				HaloBlocks.LARGE_MOONLIGHT_PRISM,

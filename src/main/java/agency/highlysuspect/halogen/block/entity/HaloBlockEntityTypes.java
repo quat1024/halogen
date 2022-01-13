@@ -9,8 +9,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class HaloBlockEntityTypes {
-	public static final BlockEntityType<NodeBlockEntity> NODE = make(NodeBlockEntity::new, HaloBlocks.NODE);
-	
 	public static final BlockEntityType<MoonlightPrismBlockEntity> LARGE_MOONLIGHT_PRISM = make(MoonlightPrismBlockEntity::large, HaloBlocks.LARGE_MOONLIGHT_PRISM);
 	public static final BlockEntityType<MoonlightPrismBlockEntity> SMALL_MOONLIGHT_PRISM = make(MoonlightPrismBlockEntity::small, HaloBlocks.SMALL_MOONLIGHT_PRISM);
 	
@@ -23,7 +21,6 @@ public class HaloBlockEntityTypes {
 	}
 	
 	public static void onInitialize() {
-		reg("node", NODE);
 		reg("large_moonlight_prism", LARGE_MOONLIGHT_PRISM);
 		reg("small_moonlight_prism", SMALL_MOONLIGHT_PRISM);
 	}
