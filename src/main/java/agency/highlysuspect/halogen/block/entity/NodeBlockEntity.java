@@ -8,13 +8,12 @@ import agency.highlysuspect.halogen.aura.container.NodeAuraContainer;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.NbtHelper2;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,13 +35,13 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	);
 	private Set<BlockPos> bindings = new HashSet<>();
 	
-	public void tickServer(World world, BlockPos pos, BlockState state) {
-		long phase = world.getTime() % TICK_INTERVAL;
+	public void tickServer(Level world, BlockPos pos, BlockState state) {
+		long phase = world.getGameTime() % TICK_INTERVAL;
 		if(phase == 0) {
 			HashSet<BlockPos> bindingsToRemove = null;
 			
 			for(BlockPos binding : bindings) {
-				if(!world.getChunkManager().isChunkLoaded(binding.getX() / 16, binding.getZ() / 16)) continue;
+				if(!world.getChunkSource().hasChunk(binding.getX() / 16, binding.getZ() / 16)) continue;
 				
 				if(!(world.getBlockEntity(binding) instanceof NodeBlockEntity otherNode)) {
 					//Remove the binding, since whatever's here is not a node anymore.
@@ -73,43 +72,43 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 		
 		if(container.isDirty()) {
 			container.clean();
-			markDirty();
+			setChanged();
 		}
 	}
 	
 	public boolean isValidBinding(BlockPos other) {
-		assert world != null;
+		assert level != null;
 		
 		//Cannot bind to self
-		if(other.equals(getPos())) return false;
+		if(other.equals(getBlockPos())) return false;
 		//Can only bind downwards
-		if(other.getY() >= getPos().getY()) return false;
+		if(other.getY() >= getBlockPos().getY()) return false;
 		//Can only bind within range
-		if(other.getSquaredDistance(getPos()) > MAX_BINDING_DISTANCE * MAX_BINDING_DISTANCE) return false;
+		if(other.distSqr(getBlockPos()) > MAX_BINDING_DISTANCE * MAX_BINDING_DISTANCE) return false;
 		//Can only bind to aura nodes
-		return world.getBlockEntity(other) instanceof NodeBlockEntity;
+		return level.getBlockEntity(other) instanceof NodeBlockEntity;
 	}
 	
 	public void bindTo(BlockPos other) {
 		assert isValidBinding(other);
 		
 		bindings.add(other);
-		markDirty();
+		setChanged();
 	}
 	
 	public void unbindFrom(BlockPos other) {
 		assert bindings.contains(other);
 		
 		bindings.remove(other);
-		markDirty();
+		setChanged();
 	}
 	
 	public boolean onLinkingWand(BlockPos other) {
-		assert world != null;
+		assert level != null;
 		
 		if(!isValidBinding(other)) return false;
 		
-		if(!world.isClient) {
+		if(!level.isClientSide) {
 			if(bindings.contains(other)) unbindFrom(other);
 			else bindTo(other);
 		}
@@ -123,14 +122,14 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	}
 	
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
+	protected void saveAdditional(CompoundTag nbt) {
 		nbt.put("aura", container.codec.encodeStart(NbtOps.INSTANCE, container).getOrThrow(false, Init.LOG::error));
 		nbt.put("bindings", NbtHelper2.fromBlockPosSet(bindings));
 	}
 	
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void load(CompoundTag nbt) {
+		super.load(nbt);
 		container = container.codec.parse(NbtOps.INSTANCE, nbt.get("aura")).getOrThrow(false, Init.LOG::error);
 		bindings = NbtHelper2.toBlockPosHashSet(nbt.getList("bindings", 10));
 	}

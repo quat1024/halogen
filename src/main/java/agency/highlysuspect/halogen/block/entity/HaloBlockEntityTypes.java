@@ -3,10 +3,10 @@ package agency.highlysuspect.halogen.block.entity;
 import agency.highlysuspect.halogen.Init;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class HaloBlockEntityTypes {
 	public static final BlockEntityType<NodeBlockEntity> NODE = make(NodeBlockEntity::new, HaloBlocks.NODE);

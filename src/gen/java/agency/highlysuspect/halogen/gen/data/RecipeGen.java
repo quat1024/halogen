@@ -2,19 +2,18 @@ package agency.highlysuspect.halogen.gen.data;
 
 import agency.highlysuspect.halogen.gen.GenInit;
 import com.google.gson.JsonObject;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.criterion.ImpossibleCriterion;
-import net.minecraft.advancement.criterion.InventoryChangedCriterion;
-import net.minecraft.data.DataCache;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.ImpossibleTrigger;
+import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import net.minecraft.data.server.recipe.ShapedRecipeJsonFactory;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.predicate.NumberRange;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.data.HashCache;
+import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ItemLike;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -22,15 +21,15 @@ import java.util.function.Consumer;
 
 public class RecipeGen implements DataProvider {
 	@Override
-	public void run(DataCache cache) throws IOException {
-		Consumer<RecipeJsonProvider> saver = r -> {
+	public void run(HashCache cache) throws IOException {
+		Consumer<FinishedRecipe> saver = r -> {
 			try {
-				Identifier recipeId = r.getRecipeId();
+				ResourceLocation recipeId = r.getId();
 				Path recipePath = GenInit.OUT_ROOT.resolve("data/" + recipeId.getNamespace() + "/recipes/" + recipeId.getPath() + ".json");
 				
-				DataProvider.writeToPath(GenInit.GSON, cache, r.toJson(), recipePath);
+				DataProvider.save(GenInit.GSON, cache, r.serializeRecipe(), recipePath);
 				
-				JsonObject advancementJson = r.toAdvancementJson();
+				JsonObject advancementJson = r.serializeAdvancement();
 				if(advancementJson != null) {
 					//Minecraft's recipe provider always puts recipe advancements in its own namespace. Let's fix that.
 					advancementJson.remove("parent");
@@ -43,7 +42,7 @@ public class RecipeGen implements DataProvider {
 					String hoo = Objects.requireNonNull(r.getAdvancementId()).getPath().replace("dazzle.group/", "");
 					
 					Path advancementPath = GenInit.OUT_ROOT.resolve("data/" + recipeId.getNamespace() + "/advancements/" + hoo + ".json");
-					DataProvider.writeToPath(GenInit.GSON, cache, advancementJson, advancementPath);
+					DataProvider.save(GenInit.GSON, cache, advancementJson, advancementPath);
 				}
 			} catch (IOException e) { //grumble grumble
 				throw new RuntimeException(e);
@@ -51,8 +50,8 @@ public class RecipeGen implements DataProvider {
 		};
 		
 		//"root" recipe advancement, referenced above in the saver.
-		JsonObject root = Advancement.Task.create().criterion("impossible", new ImpossibleCriterion.Conditions()).toJson();
-		DataProvider.writeToPath(GenInit.GSON, cache, root, GenInit.OUT_ROOT.resolve("data/halogen/advancements/recipes/root.json"));
+		JsonObject root = Advancement.Builder.advancement().addCriterion("impossible", new ImpossibleTrigger.TriggerInstance()).serializeToJson();
+		DataProvider.save(GenInit.GSON, cache, root, GenInit.OUT_ROOT.resolve("data/halogen/advancements/recipes/root.json"));
 		
 //		DazzleBlocks.DYED_SHROOMLIGHTS.forEach((color, shroom) -> {
 //			ShapelessRecipeJsonFactory recipe = ShapelessRecipeJsonFactory.create(shroom);
@@ -66,13 +65,13 @@ public class RecipeGen implements DataProvider {
 //		});
 	}
 	
-	private static void inputAndCriterion(ShapedRecipeJsonFactory recipe, String name, Character c, ItemConvertible item) {
-		recipe.input(c, item);
-		recipe.criterion(name, cond(item));
+	private static void inputAndCriterion(ShapedRecipeBuilder recipe, String name, Character c, ItemLike item) {
+		recipe.define(c, item);
+		recipe.unlockedBy(name, cond(item));
 	}
 	
-	private static InventoryChangedCriterion.Conditions cond(ItemConvertible item) {
-		return new InventoryChangedCriterion.Conditions(EntityPredicate.Extended.EMPTY, NumberRange.IntRange.ANY, NumberRange.IntRange.ANY, NumberRange.IntRange.ANY, new ItemPredicate[] {ItemPredicate.Builder.create().items(item).build()});
+	private static InventoryChangeTrigger.TriggerInstance cond(ItemLike item) {
+		return new InventoryChangeTrigger.TriggerInstance(EntityPredicate.Composite.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, new ItemPredicate[] {ItemPredicate.Builder.item().of(item).build()});
 	}
 	
 	@Override

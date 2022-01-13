@@ -4,10 +4,10 @@ import agency.highlysuspect.halogen.aura.container.AuraContainer;
 import agency.highlysuspect.halogen.aura.AuraStack;
 import agency.highlysuspect.halogen.aura.container.UnboundedHomogenousAuraContainer;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 
 public class AuraCrystalItem extends Item implements HasAuraContainer {
-	public AuraCrystalItem(AuraStack<?> stack, Settings settings) {
+	public AuraCrystalItem(AuraStack<?> stack, Properties settings) {
 		super(settings);
 		this.stack = stack;
 	}

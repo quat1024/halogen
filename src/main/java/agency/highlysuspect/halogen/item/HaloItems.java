@@ -4,20 +4,20 @@ import agency.highlysuspect.halogen.Init;
 import agency.highlysuspect.halogen.aura.HaloAuraTypes;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 public class HaloItems {
-	public static final ItemGroup GROUP = FabricItemGroupBuilder.build(Init.id("group"), HaloItems::icon);
+	public static final CreativeModeTab GROUP = FabricItemGroupBuilder.build(Init.id("group"), HaloItems::icon);
 	
 	public static final AuraCrystalItem WHITE_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.WHITE.stackOf(10), settings());
 	public static final AuraCrystalItem RED_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.RED.stackOf(10), settings());
 	public static final AuraCrystalItem BLUE_AURA_CRYSTAL = new AuraCrystalItem(HaloAuraTypes.BLUE.stackOf(100), settings());
-	public static final LinkingWandItem LINKING_WAND = new LinkingWandItem(settings().maxCount(1));
+	public static final LinkingWandItem LINKING_WAND = new LinkingWandItem(settings().stacksTo(1));
 	
 	public static final Item MOONLIGHT_SHARD = new Item(settings()); 
 	
@@ -26,7 +26,7 @@ public class HaloItems {
 	}
 	
 	private static void regBlockItem(Block b) {
-		Registry.register(Registry.ITEM, Registry.BLOCK.getId(b), new BlockItem(b, settings()));
+		Registry.register(Registry.ITEM, Registry.BLOCK.getKey(b), new BlockItem(b, settings()));
 	}
 	
 	public static void onInitialize() {
@@ -42,8 +42,8 @@ public class HaloItems {
 		reg("moonlight_shard", MOONLIGHT_SHARD);
 	}
 	
-	private static Item.Settings settings() {
-		return new Item.Settings().group(GROUP);
+	private static Item.Properties settings() {
+		return new Item.Properties().tab(GROUP);
 	}
 	
 	private static ItemStack icon() {

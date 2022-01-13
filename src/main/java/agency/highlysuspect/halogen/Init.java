@@ -6,7 +6,7 @@ import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.item.HaloItems;
 import agency.highlysuspect.halogen.worldgen.HaloFeatures;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,8 +26,8 @@ public class Init implements ModInitializer {
 		HaloFeatures.onInitialize();
 	}
 	
-	public static Identifier id(String path) {
-		return new Identifier(MODID, path);
+	public static ResourceLocation id(String path) {
+		return new ResourceLocation(MODID, path);
 	}
 	
 	public static void log(String msg, Object... args) {

@@ -4,9 +4,8 @@ import agency.highlysuspect.halogen.Init;
 import agency.highlysuspect.halogen.util.Dirtyable;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-
+import net.minecraft.nbt.Tag;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -115,11 +114,11 @@ public class AuraMap implements Dirtyable {
 	}
 	
 	//For convenience.
-	public NbtElement toNbt() {
+	public Tag toNbt() {
 		return CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow(false, Init.LOG::error);
 	}
 	
-	public static AuraMap fromNbt(NbtElement element) {
+	public static AuraMap fromNbt(Tag element) {
 		return CODEC.parse(NbtOps.INSTANCE, element).getOrThrow(false, Init.LOG::error);
 	}
 }

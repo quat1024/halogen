@@ -1,18 +1,9 @@
 package agency.highlysuspect.halogen.mixin;
 
 import agency.highlysuspect.halogen.block.HaloBlocks;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.noise.DoublePerlinNoiseSampler;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.gen.feature.GeodeCrackConfig;
-import net.minecraft.world.gen.feature.GeodeFeature;
-import net.minecraft.world.gen.feature.GeodeFeatureConfig;
-import net.minecraft.world.gen.feature.GeodeLayerConfig;
-import net.minecraft.world.gen.feature.GeodeLayerThicknessConfig;
-import net.minecraft.world.gen.feature.util.FeatureContext;
-import net.minecraft.world.gen.random.ChunkRandom;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,6 +15,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.GeodeBlockSettings;
+import net.minecraft.world.level.levelgen.GeodeCrackSettings;
+import net.minecraft.world.level.levelgen.GeodeLayerSettings;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.levelgen.feature.GeodeFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 @Mixin(GeodeFeature.class)
 public class GeodeFeatureMixin {
@@ -38,22 +40,22 @@ public class GeodeFeatureMixin {
 	),
 		locals = LocalCapture.CAPTURE_FAILHARD
 	)
-	private void generateInnerLoop(FeatureContext<?> context, CallbackInfoReturnable<Boolean> cir,
-	                               GeodeFeatureConfig geodeFeatureConfig,
+	private void generateInnerLoop(FeaturePlaceContext<?> context, CallbackInfoReturnable<Boolean> cir,
+	                               GeodeConfiguration geodeFeatureConfig,
 	                               Random random,
 	                               BlockPos pos,
-	                               StructureWorldAccess worldAccess,
+	                               WorldGenLevel worldAccess,
 	                               int i,
 	                               int j,
 	                               List<?> list,
 	                               int k,
-	                               ChunkRandom chunkRandom,
-	                               DoublePerlinNoiseSampler doublePerlinNoiseSampler,
+	                               WorldgenRandom chunkRandom,
+	                               NormalNoise doublePerlinNoiseSampler,
 	                               List<?> list2,
 	                               double d,
-	                               GeodeLayerThicknessConfig geodeLayerThicknessConfig,
-	                               GeodeLayerConfig geodeLayerConfig,
-	                               GeodeCrackConfig geodeCrackConfig,
+	                               GeodeLayerSettings geodeLayerThicknessConfig,
+	                               GeodeBlockSettings geodeLayerConfig,
+	                               GeodeCrackSettings geodeCrackConfig,
 	                               double e,
 	                               double f,
 	                               double g,
@@ -65,11 +67,11 @@ public class GeodeFeatureMixin {
 	                               Iterator<?> var32,
 	                               BlockPos blockPos3,
 	                               double u) {
-		highScoringBlocks.get().put(blockPos3.toImmutable(), u);
+		highScoringBlocks.get().put(blockPos3.immutable(), u);
 	}
 	
 	@Inject(method = "generate", at = @At("RETURN"))
-	private void generateReturn(FeatureContext<GeodeFeatureConfig> context, CallbackInfoReturnable<Boolean> cir) {
+	private void generateReturn(FeaturePlaceContext<GeodeConfiguration> context, CallbackInfoReturnable<Boolean> cir) {
 		Object2DoubleOpenHashMap<BlockPos> map = highScoringBlocks.get();
 		
 		//The largest number in this collection is the farthest from any metaball points i.e. it's arooooound where the middle is.
@@ -86,7 +88,7 @@ public class GeodeFeatureMixin {
 		}
 		
 		if(winner != null) {
-			context.getWorld().setBlockState(winner, HaloBlocks.LARGE_MOONLIGHT_PRISM.getDefaultState(), Block.NOTIFY_LISTENERS);
+			context.level().setBlock(winner, HaloBlocks.LARGE_MOONLIGHT_PRISM.defaultBlockState(), Block.UPDATE_CLIENTS);
 		}
 		
 		highScoringBlocks.remove();

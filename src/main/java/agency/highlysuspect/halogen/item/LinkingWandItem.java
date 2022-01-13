@@ -1,93 +1,93 @@
 package agency.highlysuspect.halogen.item;
 
 import agency.highlysuspect.halogen.block.entity.NodeBlockEntity;
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 
 public class LinkingWandItem extends Item {
-	public LinkingWandItem(Settings settings) {
+	public LinkingWandItem(Properties settings) {
 		super(settings);
 	}
 	
 	private static final String BINDING_KEY = "halogen-binding";
 	
 	private BlockPos getBindingSource(ItemStack stack) {
-		if(!stack.hasNbt()) return null;
+		if(!stack.hasTag()) return null;
 		
-		NbtCompound nbt = stack.getNbt(); assert nbt != null;
-		return NbtHelper.toBlockPos(nbt.getCompound(BINDING_KEY));
+		CompoundTag nbt = stack.getTag(); assert nbt != null;
+		return NbtUtils.readBlockPos(nbt.getCompound(BINDING_KEY));
 	}
 	
 	private boolean hasBindingSource(ItemStack stack) {
-		if(!stack.hasNbt()) return false;
+		if(!stack.hasTag()) return false;
 		
-		NbtCompound nbt = stack.getNbt(); assert nbt != null;
+		CompoundTag nbt = stack.getTag(); assert nbt != null;
 		return nbt.contains(BINDING_KEY);
 	}
 	
 	private void putBindingSource(ItemStack stack, BlockPos bindingPos) {
-		NbtCompound nbt = stack.getOrCreateNbt();
-		nbt.put(BINDING_KEY, NbtHelper.fromBlockPos(bindingPos));
+		CompoundTag nbt = stack.getOrCreateTag();
+		nbt.put(BINDING_KEY, NbtUtils.writeBlockPos(bindingPos));
 	}
 	
 	private void clearBindingSource(ItemStack stack) {
-		if(!stack.hasNbt()) return;
-		NbtCompound nbt = stack.getNbt(); assert nbt != null;
+		if(!stack.hasTag()) return;
+		CompoundTag nbt = stack.getTag(); assert nbt != null;
 		nbt.remove(BINDING_KEY);
 	}
 	
 	@Override
-	public ActionResult useOnBlock(ItemUsageContext context) {
-		ItemStack stack = context.getStack();
-		World world = context.getWorld();
-		BlockPos pos = context.getBlockPos();
+	public InteractionResult useOn(UseOnContext context) {
+		ItemStack stack = context.getItemInHand();
+		Level world = context.getLevel();
+		BlockPos pos = context.getClickedPos();
 		
 		if(world.getBlockEntity(pos) instanceof NodeBlockEntity) {
 			if(hasBindingSource(stack)) {
-				BlockPos bindingSource = getBindingSource(context.getStack()); assert bindingSource != null;
+				BlockPos bindingSource = getBindingSource(context.getItemInHand()); assert bindingSource != null;
 				
 				if(world.getBlockEntity(bindingSource) instanceof NodeBlockEntity src && src.onLinkingWand(pos)) {
 					clearBindingSource(stack);
-					return ActionResult.SUCCESS;
+					return InteractionResult.SUCCESS;
 				}
 			} else {
 				putBindingSource(stack, pos);
-				return ActionResult.SUCCESS;
+				return InteractionResult.SUCCESS;
 			}
 		}
 		
-		return ActionResult.PASS;
+		return InteractionResult.PASS;
 	}
 	
 	@Override
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		ItemStack stack = user.getStackInHand(hand);
+	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+		ItemStack stack = user.getItemInHand(hand);
 		
-		if(user.isSneaking() && hasBindingSource(stack)) {
+		if(user.isShiftKeyDown() && hasBindingSource(stack)) {
 			clearBindingSource(stack);
-			return TypedActionResult.success(stack, true);
+			return InteractionResultHolder.sidedSuccess(stack, true);
 		}
 		
-		return TypedActionResult.pass(stack);
+		return InteractionResultHolder.pass(stack);
 	}
 	
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		if(context.isAdvanced() && hasBindingSource(stack)) tooltip.add(new LiteralText("binding pos: " + getBindingSource(stack)));
+	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+		if(context.isAdvanced() && hasBindingSource(stack)) tooltip.add(new TextComponent("binding pos: " + getBindingSource(stack)));
 	}
 }

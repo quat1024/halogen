@@ -3,7 +3,7 @@ package agency.highlysuspect.halogen.aura;
 import agency.highlysuspect.halogen.Init;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
 
 public class HaloAuraTypes {
 	private static final Codec<Unit> UNIT_CODEC = Codec.unit(Unit.INSTANCE);

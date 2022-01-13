@@ -6,42 +6,42 @@ import agency.highlysuspect.halogen.block.entity.NodeBlockEntity;
 import agency.highlysuspect.halogen.block.entity.TickerUtil;
 import agency.highlysuspect.halogen.jankComponent.HasAuraContainer;
 import agency.highlysuspect.halogen.util.transaction.Transaction;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class NodeBlock extends Block implements BlockEntityProvider {
-	public NodeBlock(Settings settings) {
+public class NodeBlock extends Block implements EntityBlock {
+	public NodeBlock(Properties settings) {
 		super(settings);
 	}
 	
-	private static final VoxelShape NODE_SHAPE = VoxelShapes.cuboid(4/16d, 4/16d, 4/16d, 12/16d, 12/16d, 12/16d);
+	private static final VoxelShape NODE_SHAPE = Shapes.box(4/16d, 4/16d, 4/16d, 12/16d, 12/16d, 12/16d);
 	
 	@Override
-	public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-		if(world.isClient()) return;
+	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
+		if(world.isClientSide()) return;
 		if(!(world.getBlockEntity(pos) instanceof NodeBlockEntity node)) return;
 		AuraContainer nodeContainer = node.getAuraContainer();
 		
 		if(!(entity instanceof ItemEntity itemEntity)) return;
-		ItemStack stack = itemEntity.getStack();
+		ItemStack stack = itemEntity.getItem();
 		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return;
 		
 		try(Transaction tx = new Transaction()) {
@@ -50,49 +50,49 @@ public class NodeBlock extends Block implements BlockEntityProvider {
 				tx.commit();
 				
 				//Need a better idiom for extracting from items.
-				stack.decrement(1);
-				itemEntity.setStack(itemEntity.getStack()); //force an item entity sync
+				stack.shrink(1);
+				itemEntity.setItem(itemEntity.getItem()); //force an item entity sync
 			} else tx.rollback();
 		}
 	}
 	
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if(!(world.getBlockEntity(pos) instanceof NodeBlockEntity node)) return ActionResult.PASS;
+	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+		if(!(world.getBlockEntity(pos) instanceof NodeBlockEntity node)) return InteractionResult.PASS;
 		AuraContainer nodeContainer = node.getAuraContainer();
 		
-		ItemStack stack = player.getStackInHand(hand);
-		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return ActionResult.PASS;
+		ItemStack stack = player.getItemInHand(hand);
+		if(!(stack.getItem() instanceof HasAuraContainer containerHaver)) return InteractionResult.PASS;
 		
-		if(!world.isClient) {
+		if(!world.isClientSide) {
 			try(Transaction tx = new Transaction()) {
 				boolean allFit = containerHaver.getAuraContainer().pourAllInto(nodeContainer, tx);
 				
 				if(allFit) {
 					tx.commit();
 					//Need a better idiom for extracting from items.
-					stack.decrement(1);
+					stack.shrink(1);
 				} else tx.rollback();
 			}
 		}
 		
-		return ActionResult.SUCCESS;
+		return InteractionResult.SUCCESS;
 	}
 	
 	@Nullable
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-		return HaloBlockEntityTypes.NODE.instantiate(pos, state);
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return HaloBlockEntityTypes.NODE.create(pos, state);
 	}
 	
 	@Nullable
 	@Override
-	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
 		return TickerUtil.downcastTickerMemberFunc(type, HaloBlockEntityTypes.NODE, NodeBlockEntity::tickServer);
 	}
 	
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		return NODE_SHAPE;
 	}
 }

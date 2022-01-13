@@ -3,16 +3,14 @@ package agency.highlysuspect.halogen.aura;
 import agency.highlysuspect.halogen.Init;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.registry.SimpleRegistry;
-
 import java.util.function.Supplier;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 
 public final class AuraType<T> {
-	public static final RegistryKey<Registry<AuraType<?>>> AURA_TYPE_KEY = RegistryKey.ofRegistry(Init.id("aura_type"));
-	public static final Registry<AuraType<?>> REGISTRY = new SimpleRegistry<>(AURA_TYPE_KEY, Lifecycle.stable()); //"stable"
+	public static final ResourceKey<Registry<AuraType<?>>> AURA_TYPE_KEY = ResourceKey.createRegistryKey(Init.id("aura_type"));
+	public static final Registry<AuraType<?>> REGISTRY = new MappedRegistry<>(AURA_TYPE_KEY, Lifecycle.stable()); //"stable"
 	
 	public AuraType(Codec<T> dataCodec, Supplier<T> defaultData) {
 		this.dataCodec = dataCodec;
@@ -64,6 +62,6 @@ public final class AuraType<T> {
 	
 	@Override
 	public String toString() {
-		return "AuraType[" + REGISTRY.getId(this) + "]";
+		return "AuraType[" + REGISTRY.getKey(this) + "]";
 	}
 }

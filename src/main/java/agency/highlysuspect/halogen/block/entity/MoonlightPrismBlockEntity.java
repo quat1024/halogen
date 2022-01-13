@@ -3,35 +3,35 @@ package agency.highlysuspect.halogen.block.entity;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import agency.highlysuspect.halogen.util.BlockPosIteration;
 import agency.highlysuspect.halogen.util.States;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
  
 public class MoonlightPrismBlockEntity extends BlockEntity {
 	public MoonlightPrismBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int radius, int downshift) {
 		super(type, pos, state);
 		this.radius = radius;
-		this.centerPos = pos.down(downshift);
+		this.centerPos = pos.below(downshift);
 		
 		List<BlockPos> sphereOffsets = BlockPosIteration.sphereAbsoluteOffsetsCached(radius);
 		neighborhood = new BlockPos[sphereOffsets.size()];
 		for(int i = 0; i < neighborhood.length; i++) {
 			//we do a little allocating
-			neighborhood[i] = sphereOffsets.get(i).add(centerPos);
+			neighborhood[i] = sphereOffsets.get(i).offset(centerPos);
 		}
 		
 		//Preferably about 1/20th of the entire neighborhood unless that'd make way too many buckets
-		this.bucketCount = MathHelper.clamp(neighborhood.length / 20, 1, 100);
+		this.bucketCount = Mth.clamp(neighborhood.length / 20, 1, 100);
 	}
 	
 	public static MoonlightPrismBlockEntity large(BlockPos pos, BlockState state) {
@@ -63,10 +63,10 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 	//How many ticks until I scan for a new target.
 	public int scanCooldown;
 	
-	public void tick(World world, BlockPos pos, BlockState state) {
+	public void tick(Level world, BlockPos pos, BlockState state) {
 		//If i can't see the sky, there's nothing to do
-		if(!world.isSkyVisible(pos.up())) {
-			if(target != null) markDirty();
+		if(!world.canSeeSky(pos.above())) {
+			if(target != null) setChanged();
 			target = null;
 			return;
 		}
@@ -76,17 +76,17 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 			else {
 				//Tick down the change progress, and if it's zero, perform the change
 				changeProgress--;
-				markDirty();
+				setChanged();
 				
 				if(changeProgress <= 0) {
-					world.setBlockState(target, States.copyOnto(
+					world.setBlockAndUpdate(target, States.copyOnto(
 						world.getBlockState(target),
-						HaloBlocks.MOONLIGHT_CLUSTER.getDefaultState())
+						HaloBlocks.MOONLIGHT_CLUSTER.defaultBlockState())
 					);
 					
 					//Now search for a new target.
 					target = null;
-					scanCooldown = MathHelper.nextInt(world.random, 5, 20);
+					scanCooldown = Mth.nextInt(world.random, 5, 20);
 				}
 			}
 		}
@@ -98,13 +98,13 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 			//Experimentally, this is ~a little under 1 minute
 			
 			//If there's currently no target, and it's midnight, scan for a new target
-			float skyAngle = world.getSkyAngleRadians(1f);
+			float skyAngle = world.getSunAngle(1f);
 			if(skyAngle > MIDNIGHT - MIDNIGHT_DEVIATION && skyAngle < MIDNIGHT + MIDNIGHT_DEVIATION) {
 				scanCooldown--;
 				if(scanCooldown <= 0) {
 					scanCooldown = 0;
 					
-					for(int i = (int) (world.getTime() % bucketCount); i < neighborhood.length; i += bucketCount) {
+					for(int i = (int) (world.getGameTime() % bucketCount); i < neighborhood.length; i += bucketCount) {
 						BlockPos check = neighborhood[i];
 						
 //						//hmmmmm
@@ -122,8 +122,8 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 							//The amount of time I will spend working on this amethyst shard.
 							//3 seconds (+/- .5) on a new moon.
 							//1 second  (+/- .5) on a full moon.
-							changeProgress = 60 - MathHelper.floor(world.getMoonSize() * 40) + MathHelper.nextInt(world.random, -10, 10);
-							markDirty();
+							changeProgress = 60 - Mth.floor(world.getMoonBrightness() * 40) + Mth.nextInt(world.random, -10, 10);
+							setChanged();
 							break;
 						}
 					}
@@ -132,16 +132,16 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 		}
 	}
 	
-	private static boolean isFullyGrownAmethyst(World world, BlockPos pos) {
+	private static boolean isFullyGrownAmethyst(Level world, BlockPos pos) {
 		return world.getBlockState(pos).getBlock() == Blocks.AMETHYST_CLUSTER;
 	}
 	
 	@Override
-	public void readNbt(NbtCompound nbt) {
-		super.readNbt(nbt);
+	public void load(CompoundTag nbt) {
+		super.load(nbt);
 		
-		if(nbt.contains("Target", NbtElement.COMPOUND_TYPE)) {
-			target = NbtHelper.toBlockPos(nbt.getCompound("Target"));
+		if(nbt.contains("Target", Tag.TAG_COMPOUND)) {
+			target = NbtUtils.readBlockPos(nbt.getCompound("Target"));
 		} else {
 			target = null;
 		}
@@ -150,9 +150,9 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 	}
 	
 	@Override
-	protected void writeNbt(NbtCompound nbt) {
+	protected void saveAdditional(CompoundTag nbt) {
 		if(target != null) {
-			nbt.put("Target", NbtHelper.fromBlockPos(target));
+			nbt.put("Target", NbtUtils.writeBlockPos(target));
 		}
 		
 		nbt.putInt("Progress", changeProgress);

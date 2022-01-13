@@ -3,7 +3,6 @@ package agency.highlysuspect.halogen.aura;
 import agency.highlysuspect.halogen.Init;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 
 //Less a literal "stack" of anything, more "by analogy with ItemStack".

@@ -2,13 +2,13 @@ package agency.highlysuspect.halogen.util;
 
 import it.unimi.dsi.fastutil.ints.AbstractInt2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 
 public class BlockPosIteration {
 	public static AbstractInt2ObjectMap<List<BlockPos>> sphereAbsoluteCache = new Int2ObjectOpenHashMap<>();
@@ -16,8 +16,8 @@ public class BlockPosIteration {
 	
 	//Iterates outwards in a sphere of radius "radius" from the starting position.
 	//Hands you each BlockPos in sequence. Return "true" to break, whole function returns "true" if you broke in this manner.
-	public static boolean sphere(BlockPos start, int radius, Predicate<? super BlockPos.Mutable> shouldBreak) {
-		BlockPos.Mutable cursor = start.mutableCopy();
+	public static boolean sphere(BlockPos start, int radius, Predicate<? super BlockPos.MutableBlockPos> shouldBreak) {
+		BlockPos.MutableBlockPos cursor = start.mutable();
 		for(BlockPos d : sphereRelativeOffsetsCached(radius)) {
 			cursor.move(d);
 			if(shouldBreak.test(cursor)) return true;
@@ -27,8 +27,8 @@ public class BlockPosIteration {
 	
 	//Same thing.
 	//Return a non-null value to break with that value, return `null` to continue iterating.
-	public static <T> @Nullable T sphereWithBreak(BlockPos start, int radius, Function<? super BlockPos.Mutable, @Nullable T> func) {
-		BlockPos.Mutable cursor = start.mutableCopy();
+	public static <T> @Nullable T sphereWithBreak(BlockPos start, int radius, Function<? super BlockPos.MutableBlockPos, @Nullable T> func) {
+		BlockPos.MutableBlockPos cursor = start.mutable();
 		for(BlockPos d : sphereRelativeOffsetsCached(radius)) {
 			cursor.move(d);
 			T whatever = func.apply(cursor);
@@ -49,7 +49,7 @@ public class BlockPosIteration {
 		//Volume of a sphere: 4/3 * pi * radius^3
 		//Preallocate about that many slots in the array.
 		//TODO: Check that i'm not overallocating here.
-		ArrayList<BlockPos> results = new ArrayList<>(MathHelper.ceil(4d/3d * Math.PI * radius * radius * radius));
+		ArrayList<BlockPos> results = new ArrayList<>(Mth.ceil(4d/3d * Math.PI * radius * radius * radius));
 		
 		for(int x = -radius; x <= radius; x++) {
 			for(int y = -radius; y <= radius; y++) {

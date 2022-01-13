@@ -1,24 +1,23 @@
 package agency.highlysuspect.halogen.util;
 
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 
 public class NbtHelper2 {
-	public static Set<BlockPos> toBlockPosHashSet(NbtList list) {
+	public static Set<BlockPos> toBlockPosHashSet(ListTag list) {
 		HashSet<BlockPos> positions = new HashSet<>();
 		for(int i = 0; i < list.size(); i++) {
-			positions.add(NbtHelper.toBlockPos(list.getCompound(i)));
+			positions.add(NbtUtils.readBlockPos(list.getCompound(i)));
 		}
 		return positions;
 	}
 	
-	public static NbtList fromBlockPosSet(Set<BlockPos> positions) {
-		NbtList list = new NbtList();
-		positions.forEach(p -> list.add(NbtHelper.fromBlockPos(p)));
+	public static ListTag fromBlockPosSet(Set<BlockPos> positions) {
+		ListTag list = new ListTag();
+		positions.forEach(p -> list.add(NbtUtils.writeBlockPos(p)));
 		return list;
 	}
 }

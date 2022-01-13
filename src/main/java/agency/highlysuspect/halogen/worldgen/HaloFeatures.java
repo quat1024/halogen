@@ -2,13 +2,14 @@ package agency.highlysuspect.halogen.worldgen;
 
 import agency.highlysuspect.halogen.Init;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
-import net.minecraft.util.registry.BuiltinRegistries;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.GenerationStep;
-import net.minecraft.world.gen.decorator.RarityFilterPlacementModifier;
-import net.minecraft.world.gen.feature.DefaultFeatureConfig;
-import net.minecraft.world.gen.feature.PlacedFeatures;
-import net.minecraft.world.gen.feature.UndergroundConfiguredFeatures;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.data.worldgen.features.CaveFeatures;
+import net.minecraft.data.worldgen.placement.PlacementUtils;
+import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.placement.RarityFilter;
 
 public class HaloFeatures {
 	public static void onInitialize() {
@@ -16,14 +17,14 @@ public class HaloFeatures {
 		Registry.register(Registry.FEATURE, Init.id("mini_geode_feature"), miniGeode);
 		
 		var placed = miniGeode
-			.configure(DefaultFeatureConfig.INSTANCE)
-			.withPlacement(RarityFilterPlacementModifier.of(2), PlacedFeatures.OCEAN_FLOOR_WG_HEIGHTMAP);
+			.configured(NoneFeatureConfiguration.INSTANCE)
+			.placed(RarityFilter.onAverageOnceEvery(2), PlacementUtils.HEIGHTMAP_TOP_SOLID);
 		
 		Registry.register(BuiltinRegistries.PLACED_FEATURE, Init.id("mini_geode"), placed);
 		
-		BiomeModifications.addFeature(select -> select.hasBuiltInFeature(UndergroundConfiguredFeatures.AMETHYST_GEODE),
-			GenerationStep.Feature.SURFACE_STRUCTURES,
-			BuiltinRegistries.PLACED_FEATURE.getKey(placed).get()
+		BiomeModifications.addFeature(select -> select.hasBuiltInFeature(CaveFeatures.AMETHYST_GEODE),
+			GenerationStep.Decoration.SURFACE_STRUCTURES,
+			BuiltinRegistries.PLACED_FEATURE.getResourceKey(placed).get()
 		);
 	}
 }
