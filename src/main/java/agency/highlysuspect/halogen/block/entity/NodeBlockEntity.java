@@ -123,10 +123,9 @@ public class NodeBlockEntity extends BlockEntity implements HasAuraContainer {
 	}
 	
 	@Override
-	public NbtCompound writeNbt(NbtCompound nbt) {
+	protected void writeNbt(NbtCompound nbt) {
 		nbt.put("aura", container.codec.encodeStart(NbtOps.INSTANCE, container).getOrThrow(false, Init.LOG::error));
 		nbt.put("bindings", NbtHelper2.fromBlockPosSet(bindings));
-		return super.writeNbt(nbt);
 	}
 	
 	@Override

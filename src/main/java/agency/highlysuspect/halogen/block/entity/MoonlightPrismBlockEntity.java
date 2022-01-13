@@ -150,13 +150,11 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 	}
 	
 	@Override
-	public NbtCompound writeNbt(NbtCompound nbt) {
+	protected void writeNbt(NbtCompound nbt) {
 		if(target != null) {
 			nbt.put("Target", NbtHelper.fromBlockPos(target));
 		}
 		
 		nbt.putInt("Progress", changeProgress);
-		
-		return super.writeNbt(nbt);
 	}
 }

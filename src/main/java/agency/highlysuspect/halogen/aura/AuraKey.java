@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * If the AuraKeys of any two stacks are equal, the stacks are comparable with each other.
  */
 public record AuraKey<T>(@NotNull AuraType<T> type, @NotNull T data) {
-	public static final Codec<AuraKey<?>> CODEC = AuraType.REGISTRY.dispatch(AuraKey::type, t -> t.dataFieldCodec);
+	public static final Codec<AuraKey<?>> CODEC = AuraType.REGISTRY.getCodec().dispatch(AuraKey::type, t -> t.dataFieldCodec);
 	
 	//convenience methods
 	public AuraStack<T> stackOf(int amount) {

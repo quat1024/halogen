@@ -27,27 +27,27 @@ public class LinkingWandItem extends Item {
 	private static final String BINDING_KEY = "halogen-binding";
 	
 	private BlockPos getBindingSource(ItemStack stack) {
-		if(!stack.hasTag()) return null;
+		if(!stack.hasNbt()) return null;
 		
-		NbtCompound nbt = stack.getTag(); assert nbt != null;
+		NbtCompound nbt = stack.getNbt(); assert nbt != null;
 		return NbtHelper.toBlockPos(nbt.getCompound(BINDING_KEY));
 	}
 	
 	private boolean hasBindingSource(ItemStack stack) {
-		if(!stack.hasTag()) return false;
+		if(!stack.hasNbt()) return false;
 		
-		NbtCompound nbt = stack.getTag(); assert nbt != null;
+		NbtCompound nbt = stack.getNbt(); assert nbt != null;
 		return nbt.contains(BINDING_KEY);
 	}
 	
 	private void putBindingSource(ItemStack stack, BlockPos bindingPos) {
-		NbtCompound nbt = stack.getOrCreateTag();
+		NbtCompound nbt = stack.getOrCreateNbt();
 		nbt.put(BINDING_KEY, NbtHelper.fromBlockPos(bindingPos));
 	}
 	
 	private void clearBindingSource(ItemStack stack) {
-		if(!stack.hasTag()) return;
-		NbtCompound nbt = stack.getTag(); assert nbt != null;
+		if(!stack.hasNbt()) return;
+		NbtCompound nbt = stack.getNbt(); assert nbt != null;
 		nbt.remove(BINDING_KEY);
 	}
 	

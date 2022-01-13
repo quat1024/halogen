@@ -1,17 +1,18 @@
 package agency.highlysuspect.halogen.mixin;
 
-import agency.highlysuspect.halogen.Init;
 import agency.highlysuspect.halogen.block.HaloBlocks;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.noise.DoublePerlinNoiseSampler;
 import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.gen.ChunkRandom;
-import net.minecraft.world.gen.feature.*;
+import net.minecraft.world.gen.feature.GeodeCrackConfig;
+import net.minecraft.world.gen.feature.GeodeFeature;
+import net.minecraft.world.gen.feature.GeodeFeatureConfig;
+import net.minecraft.world.gen.feature.GeodeLayerConfig;
+import net.minecraft.world.gen.feature.GeodeLayerThicknessConfig;
 import net.minecraft.world.gen.feature.util.FeatureContext;
+import net.minecraft.world.gen.random.ChunkRandom;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
