@@ -2,11 +2,21 @@ package agency.highlysuspect.halogen.mechanics.prism;
 
 import agency.highlysuspect.halogen.HaloBlocks;
 import agency.highlysuspect.halogen.HaloBlockEntityTypes;
-import agency.highlysuspect.halogen.util.BlockPosIteration;
 import agency.highlysuspect.halogen.util.States;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.ai.village.poi.PoiRecord;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -22,17 +32,7 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 	public MoonlightPrismBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int radius, int downshift) {
 		super(type, pos, state);
 		this.radius = radius;
-		this.centerPos = pos.below(downshift);
-		
-		List<BlockPos> sphereOffsets = BlockPosIteration.sphereAbsoluteOffsetsCached(radius);
-		neighborhood = new BlockPos[sphereOffsets.size()];
-		for(int i = 0; i < neighborhood.length; i++) {
-			//we do a little allocating
-			neighborhood[i] = sphereOffsets.get(i).offset(centerPos);
-		}
-		
-		//Preferably about 1/20th of the entire neighborhood unless that'd make way too many buckets
-		this.bucketCount = Mth.clamp(neighborhood.length / 20, 1, 100);
+		this.downshift = downshift;
 	}
 	
 	public static MoonlightPrismBlockEntity large(BlockPos pos, BlockState state) {
@@ -43,98 +43,103 @@ public class MoonlightPrismBlockEntity extends BlockEntity {
 		return new MoonlightPrismBlockEntity(HaloBlockEntityTypes.SMALL_MOONLIGHT_PRISM, pos, state, 5, 2);
 	}
 	
-	//The radius of the sphere of influence surrounding this moonlight prism.
-	//Amethyst shards inside this region are eligible to be turned into moonlight shards.
-	public final int radius;
-	//Where that sphere of influence is centered.
-	public final BlockPos centerPos;
+	//Amethyst clusters inside this sphere of influence are eligible to be converted to moonlight clusters, if it's midnight.
+	private final int radius;
+	private final int downshift;
 	
-	//A precomputed list of all BlockPos-es, in a sphere of radius "radius" surrounding me.
-	private final BlockPos[] neighborhood;
-	//If this is 20 then 1/20th of the neighborhood is checked for amethyst shards every tick.
-	//This is because large prisms have a *really* big neighborhood.
-	//Damn it's almost like the volume of a sphere grows with the cube of its radius or something! Wild
-	//I don't wanna check like 15k blocks in one tick
-	private final int bucketCount;
-	
-	//The amethyst shard I'm currently working on moonlightifying, or `null` if i'm not doing that.
-	public @Nullable BlockPos target;
-	//How many ticks until that amethyst shard has changed.
-	public int changeProgress;
+	//The amethyst cluster I'm currently working on moonlightifying, or `null` if i'm not doing that.
+	private @Nullable BlockPos target;
+	//How many ticks until that amethyst cluster will change.
+	private int changeProgress;
 	//How many ticks until I scan for a new target.
-	public int scanCooldown;
+	private int scanCooldown;
 	
-	public void tick(Level world, BlockPos pos, BlockState state) {
+	private static final float MIDNIGHT = (float) Math.PI;
+	private static final float MIDNIGHT_DEVIATION = (float) Math.toRadians(10);
+	
+	public void tick(Level level, BlockPos pos, BlockState state) {
+		if(!(level instanceof ServerLevel serverLevel)) return; //Should never happen; server-only ticker
+		
 		//If i can't see the sky, there's nothing to do
-		if(!world.canSeeSky(pos.above())) {
+		if(!level.canSeeSky(pos.above())) {
 			if(target != null) setChanged();
 			target = null;
 			return;
 		}
 		
+		//If there is a target, tick down the processing time, or convert to a moonlight cluster if the time has expired.
 		if(target != null) {
-			if(!isFullyGrownAmethyst(world, target)) target = null; //Changed away from an amethyst block; find a new target
+			if(!isFullyGrownAmethyst(level, target)) target = null;
 			else {
-				//Tick down the change progress, and if it's zero, perform the change
 				changeProgress--;
 				setChanged();
 				
 				if(changeProgress <= 0) {
-					world.setBlockAndUpdate(target, States.copyOnto(
-						world.getBlockState(target),
-						HaloBlocks.MOONLIGHT_CLUSTER.defaultBlockState())
-					);
+					convertToMoonlightCluster(level, target);
 					
 					//Now search for a new target.
 					target = null;
-					scanCooldown = Mth.nextInt(world.random, 5, 20);
+					scanCooldown = Mth.nextInt(level.random, 5, 20);
 				}
 			}
 		}
 		
+		//If there's currently no target, and it's midnight, scan for a new target
 		if(target == null) {
-			final float MIDNIGHT = (float) Math.PI; //getSkyAngleRadians() at exactly midnight
-			final float MIDNIGHT_DEVIATION = (float) Math.toRadians(10); //Max deviation from the midnight point, controls the duration of the effect.
-			//It's hard to express this number in terms of real-time seconds, i just messed with it until it felt okay.
-			//Experimentally, this is ~a little under 1 minute
-			
-			//If there's currently no target, and it's midnight, scan for a new target
-			float skyAngle = world.getSunAngle(1f);
+			float skyAngle = level.getSunAngle(1f);
 			if(skyAngle > MIDNIGHT - MIDNIGHT_DEVIATION && skyAngle < MIDNIGHT + MIDNIGHT_DEVIATION) {
 				scanCooldown--;
 				if(scanCooldown <= 0) {
 					scanCooldown = 0;
 					
-					for(int i = (int) (world.getGameTime() % bucketCount); i < neighborhood.length; i += bucketCount) {
-						BlockPos check = neighborhood[i];
-						
-//						//hmmmmm
-//						for(ServerPlayerEntity player : ((ServerWorld) world).getPlayers()) {
-//							PacketByteBuf b = PacketByteBufs.create();
-//							b.writeBlockPos(check);
-//							b.writeInt(0xABCDEF87);
-//							b.writeString("");
-//							b.writeInt(300);
-//							player.networkHandler.sendPacket(new CustomPayloadS2CPacket(CustomPayloadS2CPacket.DEBUG_GAME_TEST_ADD_MARKER, b));
-//						}
-						
-						if(isFullyGrownAmethyst(world, check)) {
-							target = check;
-							//The amount of time I will spend working on this amethyst shard.
-							//3 seconds (+/- .5) on a new moon.
-							//1 second  (+/- .5) on a full moon.
-							changeProgress = 60 - Mth.floor(world.getMoonBrightness() * 40) + Mth.nextInt(world.random, -10, 10);
-							setChanged();
-							break;
-						}
+					BlockPos sphereCenter = pos.below(downshift);
+					BlockPos nextTarget = findTarget(serverLevel, sphereCenter, radius);
+					if(nextTarget != null) {
+						target = nextTarget;
+						//3 seconds on a new moon, 1 second on a full moon. (Plus or minus half a second; why not.)
+						changeProgress = 60 - Mth.floor(level.getMoonBrightness() * 40) + Mth.nextInt(level.random, -10, 10);
+						setChanged();
 					}
 				}
 			}
 		}
 	}
 	
-	private static boolean isFullyGrownAmethyst(Level world, BlockPos pos) {
-		return world.getBlockState(pos).getBlock() == Blocks.AMETHYST_CLUSTER;
+	private static void convertToMoonlightCluster(Level level, BlockPos amethystPos) {
+		level.setBlockAndUpdate(amethystPos, States.copyOnto(
+			level.getBlockState(amethystPos),
+			HaloBlocks.MOONLIGHT_CLUSTER.defaultBlockState())
+		);
+	}
+	
+	private static @Nullable BlockPos findTarget(ServerLevel level, BlockPos centerPos, int radius) {
+		ArrayList<Direction> directions = new ArrayList<>(Arrays.asList(Direction.values())); //Will be repeatedly shuffled.
+		Random random = level.getRandom();
+		
+		//Find nearby budding amethyst blocks.
+		List<BlockPos> nearbyClusters = level.getPoiManager()
+			.getInRange(type -> type.is(Blocks.BUDDING_AMETHYST.defaultBlockState()), centerPos, radius, PoiManager.Occupancy.ANY)
+			.map(PoiRecord::getPos)
+			.collect(Collectors.toList());
+		
+		//Toss them in a bag.
+		Collections.shuffle(nearbyClusters, random);
+		
+		//Search around each one for fully grown amethyst clusters, with no directional preference.
+		//Yeah, yeah, it doesn't check to see that the cluster is resting on *this* bud. Who cares.
+		for(BlockPos bud : nearbyClusters) {
+			Collections.shuffle(directions, random);
+			for(Direction offset : directions) {
+				BlockPos candidate = bud.relative(offset);
+				if(isFullyGrownAmethyst(level, candidate)) return candidate;
+			}
+		}
+		
+		return null;
+	}
+	
+	private static boolean isFullyGrownAmethyst(Level level, BlockPos pos) {
+		return level.getBlockState(pos).getBlock() == Blocks.AMETHYST_CLUSTER;
 	}
 	
 	@Override

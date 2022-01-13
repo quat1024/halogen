@@ -20,6 +20,7 @@ public class Init implements ModInitializer {
 		HaloItems.onInitialize();
 		
 		HaloFeatures.onInitialize();
+		HaloPoiTypes.onInitialize();
 	}
 	
 	public static ResourceLocation id(String path) {

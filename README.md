@@ -14,8 +14,6 @@ Yes i know overground small geodes are too common it's for testing purposes
 
 ### Things to look at
 
-Should probably register a poi for amethyst crystal clusters instead of this horrendous scanning thing i have going on right now
-
 can i tweak specifically the amethyst geode feature that is used in worldgen, instead of blindly patching GeodeFeature
 
 # License
