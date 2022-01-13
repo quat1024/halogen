@@ -1,8 +1,7 @@
-package agency.highlysuspect.halogen.item;
+package agency.highlysuspect.halogen;
 
-import agency.highlysuspect.halogen.Init;
-import agency.highlysuspect.halogen.aura.HaloAuraTypes;
-import agency.highlysuspect.halogen.block.HaloBlocks;
+import agency.highlysuspect.halogen.mechanics.aura.AuraCrystalItem;
+import agency.highlysuspect.halogen.mechanics.aura.HaloAuraTypes;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.world.item.BlockItem;

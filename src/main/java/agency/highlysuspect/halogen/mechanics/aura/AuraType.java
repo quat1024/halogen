@@ -1,9 +1,7 @@
-package agency.highlysuspect.halogen.aura;
+package agency.highlysuspect.halogen.mechanics.aura;
 
 import agency.highlysuspect.halogen.Init;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
-import java.util.function.Supplier;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;

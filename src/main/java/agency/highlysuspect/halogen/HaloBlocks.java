@@ -1,7 +1,6 @@
-package agency.highlysuspect.halogen.block;
+package agency.highlysuspect.halogen;
 
-import agency.highlysuspect.halogen.Init;
-import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
+import agency.highlysuspect.halogen.mechanics.prism.MoonlightPrismBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.AmethystClusterBlock;
 import net.minecraft.world.level.block.Block;

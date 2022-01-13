@@ -1,7 +1,6 @@
-package agency.highlysuspect.halogen.block;
+package agency.highlysuspect.halogen.mechanics.prism;
 
-import agency.highlysuspect.halogen.block.entity.MoonlightPrismBlockEntity;
-import agency.highlysuspect.halogen.block.entity.TickerUtil;
+import agency.highlysuspect.halogen.util.TickerUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;

@@ -1,9 +1,7 @@
 package agency.highlysuspect.halogen.mixin;
 
-import agency.highlysuspect.halogen.block.HaloBlocks;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap.Entry;
+import agency.highlysuspect.halogen.HaloBlocks;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

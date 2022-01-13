@@ -1,6 +1,7 @@
-package agency.highlysuspect.halogen.block.entity;
+package agency.highlysuspect.halogen.mechanics.prism;
 
-import agency.highlysuspect.halogen.block.HaloBlocks;
+import agency.highlysuspect.halogen.HaloBlocks;
+import agency.highlysuspect.halogen.HaloBlockEntityTypes;
 import agency.highlysuspect.halogen.util.BlockPosIteration;
 import agency.highlysuspect.halogen.util.States;
 import org.jetbrains.annotations.Nullable;

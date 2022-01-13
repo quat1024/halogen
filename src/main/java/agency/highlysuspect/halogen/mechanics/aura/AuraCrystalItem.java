@@ -1,6 +1,5 @@
-package agency.highlysuspect.halogen.item;
+package agency.highlysuspect.halogen.mechanics.aura;
 
-import agency.highlysuspect.halogen.aura.AuraType;
 import net.minecraft.world.item.Item;
 
 public class AuraCrystalItem extends Item {

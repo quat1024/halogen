@@ -1,6 +1,6 @@
-package agency.highlysuspect.halogen.worldgen;
+package agency.highlysuspect.halogen.mechanics.prism;
 
-import agency.highlysuspect.halogen.block.HaloBlocks;
+import agency.highlysuspect.halogen.HaloBlocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;

@@ -1,6 +1,6 @@
 package agency.highlysuspect.halogen.gen.data;
 
-import agency.highlysuspect.halogen.block.HaloBlocks;
+import agency.highlysuspect.halogen.HaloBlocks;
 import agency.highlysuspect.halogen.gen.GenInit;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.Registry;

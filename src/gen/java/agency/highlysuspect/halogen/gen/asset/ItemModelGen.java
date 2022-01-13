@@ -1,8 +1,8 @@
 package agency.highlysuspect.halogen.gen.asset;
 
-import agency.highlysuspect.halogen.block.HaloBlocks;
+import agency.highlysuspect.halogen.HaloBlocks;
 import agency.highlysuspect.halogen.gen.GenInit;
-import agency.highlysuspect.halogen.item.HaloItems;
+import agency.highlysuspect.halogen.HaloItems;
 import com.google.gson.JsonElement;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataProvider;

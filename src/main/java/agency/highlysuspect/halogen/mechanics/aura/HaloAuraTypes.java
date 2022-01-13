@@ -1,4 +1,4 @@
-package agency.highlysuspect.halogen.aura;
+package agency.highlysuspect.halogen.mechanics.aura;
 
 import agency.highlysuspect.halogen.Init;
 import net.minecraft.core.Registry;

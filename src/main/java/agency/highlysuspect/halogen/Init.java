@@ -1,10 +1,6 @@
 package agency.highlysuspect.halogen;
 
-import agency.highlysuspect.halogen.aura.HaloAuraTypes;
-import agency.highlysuspect.halogen.block.HaloBlocks;
-import agency.highlysuspect.halogen.block.entity.HaloBlockEntityTypes;
-import agency.highlysuspect.halogen.item.HaloItems;
-import agency.highlysuspect.halogen.worldgen.HaloFeatures;
+import agency.highlysuspect.halogen.mechanics.aura.HaloAuraTypes;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
