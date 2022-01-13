@@ -10,6 +10,10 @@ public class Init implements ModInitializer {
 	public static final String MODID = "halogen";
 	public static final Logger LOG = LogManager.getLogger(MODID);
 	
+	//Hack for datagen. I don't use the correct fabric-api datagen utilities (yet?).
+	//Should get removed at some point.
+	public static boolean allDone = false;
+	
 	@Override
 	public void onInitialize() {
 		HaloAuraTypes.onInitialize();
@@ -21,6 +25,8 @@ public class Init implements ModInitializer {
 		
 		HaloFeatures.onInitialize();
 		HaloPoiTypes.onInitialize();
+		
+		allDone = true;
 	}
 	
 	public static ResourceLocation id(String path) {
