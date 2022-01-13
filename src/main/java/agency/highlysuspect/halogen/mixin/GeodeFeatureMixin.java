@@ -34,44 +34,42 @@ public class GeodeFeatureMixin {
 	
 	//I am so fucking sorry
 	@Inject(
-		method = "generate", at = @At(
+		method = "place", at = @At(
 		value = "FIELD",
-		target = "Lnet/minecraft/world/gen/feature/GeodeLayerConfig;fillingProvider:Lnet/minecraft/world/gen/stateprovider/BlockStateProvider;"
-	),
-		locals = LocalCapture.CAPTURE_FAILHARD
-	)
-	private void generateInnerLoop(FeaturePlaceContext<?> context, CallbackInfoReturnable<Boolean> cir,
-	                               GeodeConfiguration geodeFeatureConfig,
-	                               Random random,
-	                               BlockPos pos,
-	                               WorldGenLevel worldAccess,
-	                               int i,
-	                               int j,
-	                               List<?> list,
-	                               int k,
-	                               WorldgenRandom chunkRandom,
-	                               NormalNoise doublePerlinNoiseSampler,
-	                               List<?> list2,
-	                               double d,
-	                               GeodeLayerSettings geodeLayerThicknessConfig,
-	                               GeodeBlockSettings geodeLayerConfig,
-	                               GeodeCrackSettings geodeCrackConfig,
-	                               double e,
-	                               double f,
-	                               double g,
-	                               double h,
-	                               double l,
-	                               boolean bl,
-	                               List<?> list3,
-	                               Predicate<?> predicate,
-	                               Iterator<?> var32,
-	                               BlockPos blockPos3,
-	                               double u) {
+		target = "Lnet/minecraft/world/level/levelgen/GeodeBlockSettings;fillingProvider:Lnet/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProvider;"
+	), locals = LocalCapture.CAPTURE_FAILHARD)
+	private void placeInnerLoop(FeaturePlaceContext<?> context, CallbackInfoReturnable<Boolean> cir,
+	                            GeodeConfiguration geodeFeatureConfig,
+	                            Random random,
+	                            BlockPos pos,
+	                            WorldGenLevel worldAccess,
+	                            int i,
+	                            int j,
+	                            List<?> list,
+	                            int k,
+	                            WorldgenRandom chunkRandom,
+	                            NormalNoise doublePerlinNoiseSampler,
+	                            List<?> list2,
+	                            double d,
+	                            GeodeLayerSettings geodeLayerThicknessConfig,
+	                            GeodeBlockSettings geodeLayerConfig,
+	                            GeodeCrackSettings geodeCrackConfig,
+	                            double e,
+	                            double f,
+	                            double g,
+	                            double h,
+	                            double l,
+	                            boolean bl,
+	                            List<?> list3,
+	                            Predicate<?> predicate,
+	                            Iterator<?> var32,
+	                            BlockPos blockPos3,
+	                            double u) {
 		highScoringBlocks.get().put(blockPos3.immutable(), u);
 	}
 	
-	@Inject(method = "generate", at = @At("RETURN"))
-	private void generateReturn(FeaturePlaceContext<GeodeConfiguration> context, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(method = "place", at = @At("RETURN"))
+	private void placeReturn(FeaturePlaceContext<GeodeConfiguration> context, CallbackInfoReturnable<Boolean> cir) {
 		Object2DoubleOpenHashMap<BlockPos> map = highScoringBlocks.get();
 		
 		//The largest number in this collection is the farthest from any metaball points i.e. it's arooooound where the middle is.

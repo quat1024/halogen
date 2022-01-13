@@ -30,7 +30,7 @@ public class MiniGeodeFeature extends Feature<NoneFeatureConfiguration> {
 	public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
 		Random random = context.random();
 		BlockPos origin = context.origin();
-		WorldGenLevel world = context.level();
+		WorldGenLevel level = context.level();
 		
 		double diameter = UniformFloat.of(7, 9).sample(random);
 		double radius = diameter / 2;
@@ -39,7 +39,7 @@ public class MiniGeodeFeature extends Feature<NoneFeatureConfiguration> {
 		//Figure out the center of the sphere
 		Vec3 centerDouble = new Vec3(
 			origin.getX() + radius,
-			context.chunkGenerator().getBaseHeight(origin.getX(), origin.getZ(), Heightmap.Types.OCEAN_FLOOR_WG, world) - sink,
+			context.chunkGenerator().getBaseHeight(origin.getX(), origin.getZ(), Heightmap.Types.OCEAN_FLOOR_WG, level) - sink,
 			origin.getZ() + radius
 		).add(random.nextDouble(), random.nextDouble(), random.nextDouble());
 		BlockPos centerBlockPos = new BlockPos(Math.round(centerDouble.x), Math.round(centerDouble.y), Math.round(centerDouble.z));
@@ -50,7 +50,7 @@ public class MiniGeodeFeature extends Feature<NoneFeatureConfiguration> {
 		List<BlockPos> basaltBlocks = new ArrayList<>();
 		int radiusCeil = Mth.ceil(radius);
 		for(BlockPos pos : BlockPos.withinManhattan(centerBlockPos, radiusCeil, radiusCeil, radiusCeil)) {
-			if(!world.getBlockState(pos).canOcclude()) continue;
+			if(!level.getBlockState(pos).canOcclude()) continue;
 			
 			double distance = Vec3.atCenterOf(pos).distanceTo(centerDouble);
 			distance -= random.nextDouble() / 2; //breaks it up a bit idk
@@ -66,9 +66,9 @@ public class MiniGeodeFeature extends Feature<NoneFeatureConfiguration> {
 		if(amethystBlocks.size() < 7 || basaltBlocks.size() < 15) return false;
 		
 		//Actually place the dang thing
-		for(BlockPos pos : airBlocks) world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-		for(BlockPos pos : amethystBlocks) world.setBlock(pos, Blocks.AMETHYST_BLOCK.defaultBlockState(), Block.UPDATE_CLIENTS);
-		for(BlockPos pos : basaltBlocks) world.setBlock(pos, Blocks.SMOOTH_BASALT.defaultBlockState(), Block.UPDATE_CLIENTS);
+		for(BlockPos pos : airBlocks) level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+		for(BlockPos pos : amethystBlocks) level.setBlock(pos, Blocks.AMETHYST_BLOCK.defaultBlockState(), Block.UPDATE_CLIENTS);
+		for(BlockPos pos : basaltBlocks) level.setBlock(pos, Blocks.SMOOTH_BASALT.defaultBlockState(), Block.UPDATE_CLIENTS);
 		
 		//Add some amethyst buds too
 		int budCount = Math.min(5, amethystBlocks.size() / 6);
@@ -77,18 +77,18 @@ public class MiniGeodeFeature extends Feature<NoneFeatureConfiguration> {
 			if(amethystBlocks.isEmpty()) break;
 			
 			BlockPos pos = amethystBlocks.remove(random.nextInt(amethystBlocks.size()));
-			world.setBlock(pos, Blocks.BUDDING_AMETHYST.defaultBlockState(), Block.UPDATE_CLIENTS);
+			level.setBlock(pos, Blocks.BUDDING_AMETHYST.defaultBlockState(), Block.UPDATE_CLIENTS);
 			
 			for(Direction d : Direction.values()) {
 				BlockPos off = pos.relative(d);
-				if(random.nextBoolean() && BuddingAmethystBlock.canClusterGrowAtState(world.getBlockState(off))) {
-					world.setBlock(pos.relative(d), Blocks.MEDIUM_AMETHYST_BUD.defaultBlockState().setValue(BlockStateProperties.FACING, d), Block.UPDATE_CLIENTS);
+				if(random.nextBoolean() && BuddingAmethystBlock.canClusterGrowAtState(level.getBlockState(off))) {
+					level.setBlock(pos.relative(d), Blocks.MEDIUM_AMETHYST_BUD.defaultBlockState().setValue(BlockStateProperties.FACING, d), Block.UPDATE_CLIENTS);
 				}
 			}
 		}
 		
 		//Finally add the moonlight prism itself
-		world.setBlock(centerBlockPos.above((int) (radius / 3)), HaloBlocks.SMALL_MOONLIGHT_PRISM.defaultBlockState(), Block.UPDATE_CLIENTS);
+		level.setBlock(centerBlockPos.above((int) (radius / 3)), HaloBlocks.SMALL_MOONLIGHT_PRISM.defaultBlockState(), Block.UPDATE_CLIENTS);
 		return true;
 	}
 }
